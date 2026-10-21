@@ -20,6 +20,20 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum TeachingMode {
+  HOME
+  ONLINE
+  BOTH
+}
+
+// Set by admins in step 1.4; only VERIFIED tutors get the verified badge.
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
@@ -32,9 +46,33 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   refreshTokens RefreshToken[]
+  tutorProfile  TutorProfile?
 
   @@index([role])
   @@map("users")
+}
+
+// One profile per tutor. Subjects and areas are many-to-many (Prisma creates the join tables).
+model TutorProfile {
+  id                 String             @id @default(uuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline           String
+  bio                String
+  qualification      String
+  experienceYears    Int                @default(0)
+  hourlyRate         Int // PKR per hour
+  teachingMode       TeachingMode
+  isPublished        Boolean            @default(false)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  subjects           Subject[]
+  areas              Area[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([isPublished, verificationStatus])
+  @@index([hourlyRate])
+  @@map("tutor_profiles")
 }
 
 // Only a hash of the refresh token is stored, so a DB leak cannot be used to log in.
@@ -61,18 +99,20 @@ model City {
 }
 
 model Area {
-  id     String @id @default(uuid())
+  id     String         @id @default(uuid())
   name   String
   cityId String
-  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  city   City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  tutors TutorProfile[]
 
   @@unique([cityId, name])
   @@map("areas")
 }
 
 model Subject {
-  id   String @id @default(uuid())
-  name String @unique
+  id     String         @id @default(uuid())
+  name   String         @unique
+  tutors TutorProfile[]
 
   @@map("subjects")
 }

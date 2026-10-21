@@ -15,39 +15,39 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 
 ## Features
 
-| Module | Status |
-|---|---|
-| Project foundation (config, logging, errors, security, DB, tests, docs, CI) | ✅ Done |
-| Authentication and role-based access (student, parent, tutor, admin) | ✅ Done |
-| Tutor profiles, subjects, areas, availability | 🔜 Planned |
-| Admin-controlled tutor verification (documents stay private) | 🔜 Planned |
-| Tutor search and filters (cached in Redis) | 🔜 Planned |
-| Requests, shortlist, matching and recommendations | 🔜 Planned |
-| Reviews and ratings with moderation | 🔜 Planned |
-| Notifications (real-time with Socket.IO) | 🔜 Planned |
-| Courses, lessons, enrollment, progress | 🔜 Planned |
-| Virtual class scheduling | 🔜 Planned |
-| AI learning assistant | 🔜 Planned |
-| Admin dashboard APIs | 🔜 Planned |
+| Module                                                                      | Status     |
+| --------------------------------------------------------------------------- | ---------- |
+| Project foundation (config, logging, errors, security, DB, tests, docs, CI) | ✅ Done    |
+| Authentication and role-based access (student, parent, tutor, admin)        | ✅ Done    |
+| Tutor profiles, subjects, areas, availability                               | 🔜 Planned |
+| Admin-controlled tutor verification (documents stay private)                | 🔜 Planned |
+| Tutor search and filters (cached in Redis)                                  | 🔜 Planned |
+| Requests, shortlist, matching and recommendations                           | 🔜 Planned |
+| Reviews and ratings with moderation                                         | 🔜 Planned |
+| Notifications (real-time with Socket.IO)                                    | 🔜 Planned |
+| Courses, lessons, enrollment, progress                                      | 🔜 Planned |
+| Virtual class scheduling                                                    | 🔜 Planned |
+| AI learning assistant                                                       | 🔜 Planned |
+| Admin dashboard APIs                                                        | 🔜 Planned |
 
 Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.md)**.
 
 ## Tech stack
 
-| Area | Technology |
-|---|---|
-| Runtime and language | Node.js 20+, TypeScript (strict) |
-| API | Express 5, REST, OpenAPI/Swagger |
-| Database | PostgreSQL 16 with Prisma ORM |
-| Cache, queues | Redis 7 (BullMQ planned) |
-| Auth | JWT access tokens, rotating refresh tokens, argon2 password hashing, RBAC |
-| Validation | Zod |
-| Security | helmet, CORS, rate limiting |
-| Logging | Pino |
-| Testing | Vitest, Supertest |
-| Quality | ESLint, Prettier, Husky, lint-staged |
-| DevOps | Docker Compose, GitHub Actions |
-| Frontend (planned) | React, Tailwind CSS |
+| Area                 | Technology                                                                |
+| -------------------- | ------------------------------------------------------------------------- |
+| Runtime and language | Node.js 20+, TypeScript (strict)                                          |
+| API                  | Express 5, REST, OpenAPI/Swagger                                          |
+| Database             | PostgreSQL 16 with Prisma ORM                                             |
+| Cache, queues        | Redis 7 (BullMQ planned)                                                  |
+| Auth                 | JWT access tokens, rotating refresh tokens, argon2 password hashing, RBAC |
+| Validation           | Zod                                                                       |
+| Security             | helmet, CORS, rate limiting                                               |
+| Logging              | Pino                                                                      |
+| Testing              | Vitest, Supertest                                                         |
+| Quality              | ESLint, Prettier, Husky, lint-staged                                      |
+| DevOps               | Docker Compose, GitHub Actions                                            |
+| Frontend (planned)   | React, Tailwind CSS                                                       |
 
 ## Architecture
 
@@ -64,7 +64,10 @@ routes → middlewares (auth, validation, rate limit) → controller → service
 Errors are thrown as `AppError` and one global handler returns a consistent JSON shape:
 
 ```json
-{ "success": false, "error": { "code": "NOT_FOUND", "message": "Tutor not found" } }
+{
+  "success": false,
+  "error": { "code": "NOT_FOUND", "message": "Tutor not found" }
+}
 ```
 
 ## Project structure
@@ -114,41 +117,46 @@ npm run dev                   # API on http://localhost:5000
 
 ### Useful URLs
 
-| URL | What |
-|---|---|
-| http://localhost:5000/health | Health check (API and database) |
+| URL                            | What                              |
+| ------------------------------ | --------------------------------- |
+| http://localhost:5000/health   | Health check (API and database)   |
 | http://localhost:5000/api/docs | Interactive Swagger documentation |
 
 ## Scripts (run inside `backend/`)
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Start with auto-reload |
-| `npm run build` / `npm start` | Compile and run production build |
-| `npm test` | Run all tests (needs Docker running) |
-| `npm run test:coverage` | Tests with coverage report |
-| `npm run lint` / `npm run format` | ESLint / Prettier |
-| `npm run typecheck` | TypeScript check without output |
-| `npm run db:migrate -- --name <name>` | Create and apply a migration |
-| `npm run db:seed` | Insert starter data (safe to repeat) |
-| `npm run db:studio` | Browse data in the browser |
-| `npm run docker:up` / `docker:down` | Start / stop PostgreSQL and Redis |
+| Command                               | Purpose                              |
+| ------------------------------------- | ------------------------------------ |
+| `npm run dev`                         | Start with auto-reload               |
+| `npm run build` / `npm start`         | Compile and run production build     |
+| `npm test`                            | Run all tests (needs Docker running) |
+| `npm run test:coverage`               | Tests with coverage report           |
+| `npm run lint` / `npm run format`     | ESLint / Prettier                    |
+| `npm run typecheck`                   | TypeScript check without output      |
+| `npm run db:migrate -- --name <name>` | Create and apply a migration         |
+| `npm run db:seed`                     | Insert starter data (safe to repeat) |
+| `npm run db:studio`                   | Browse data in the browser           |
+| `npm run docker:up` / `docker:down`   | Start / stop PostgreSQL and Redis    |
 
 ## API overview
 
 Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 
-| Method | Path | Description | Auth |
-|---|---|---|---|
-| POST | `/auth/register` | Create a student, parent or tutor account | Public |
-| POST | `/auth/login` | Log in, receive an access token and refresh cookie | Public |
-| POST | `/auth/refresh` | Rotate the refresh token, get a new access token | Cookie |
-| POST | `/auth/logout` | Revoke the refresh token | Cookie |
-| PATCH | `/users/me` | Update my name / phone | Bearer token |
-| POST | `/users/me/password` | Change password (logs out all devices) | Bearer token |
-| GET | `/users` | List users (pagination, role/status/search filters) | Admin |
-| PATCH | `/users/:id/status` | Suspend or reactivate a user | Admin |
-| GET | `/auth/me` | Current user | Bearer token |
+| Method | Path                 | Description                                         | Auth         |
+| ------ | -------------------- | --------------------------------------------------- | ------------ |
+| POST   | `/auth/register`     | Create a student, parent or tutor account           | Public       |
+| POST   | `/auth/login`        | Log in, receive an access token and refresh cookie  | Public       |
+| POST   | `/auth/refresh`      | Rotate the refresh token, get a new access token    | Cookie       |
+| POST   | `/auth/logout`       | Revoke the refresh token                            | Cookie       |
+| PATCH  | `/users/me`          | Update my name / phone                              | Bearer token |
+| POST   | `/users/me/password` | Change password (logs out all devices)              | Bearer token |
+| GET    | `/users`             | List users (pagination, role/status/search filters) | Admin        |
+| PATCH  | `/users/:id/status`  | Suspend or reactivate a user                        | Admin        |
+| GET    | `/tutors/me`         | My tutor profile                                    | Tutor        |
+| PUT    | `/tutors/me`         | Create or replace my tutor profile                  | Tutor        |
+| GET    | `/tutors/:id`        | Public tutor profile (published only)               | Public       |
+| GET    | `/catalog/cities`    | Cities with their areas                             | Public       |
+| GET    | `/catalog/subjects`  | All subjects                                        | Public       |
+| GET    | `/auth/me`           | Current user                                        | Bearer token |
 
 ## Security highlights
 
@@ -167,8 +175,8 @@ Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 
 ## Team
 
-| Name | Roll No. | Role |
-|---|---|---|
+| Name                   | Roll No.    | Role                  |
+| ---------------------- | ----------- | --------------------- |
 | Muzamil Hussain Burfat | 2k23/IT/116 | Project Lead, backend |
 
 Supervisor: Prof. Muhammad Ali Nizamani.

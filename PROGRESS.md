@@ -156,7 +156,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 - ✅ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
 - ✅ 1.2 Users (profile update, change password, admin list + suspend)
-- ⬜ 1.3 Tutor profile (+ locations/areas)
+- ✅ 1.3 Tutor profile (+ locations/areas)
 - ⬜ 1.4 Verification (upload docs, admin approve/reject)
 - ⬜ 1.5 Search & filters (+ Redis cache)
 - ⬜ 1.6 Requests, shortlist, matching/recommendations
@@ -177,22 +177,35 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Changelog
 
-| Date       | Step     | Notes                                                                                                                  |
-| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created                                                                      |
-| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified                      |
-| 2026-10-18 | 0.5      | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit                                        |
-| 2026-10-21 | 0.6      | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts                         |
-| 2026-10-21 | 0.7      | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config                                         |
-| 2026-10-21 | 0.8      | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000                                    |
-| 2026-10-21 | 0.9      | `AppError`, global error handler, 404 handler; consistent JSON error shape                                             |
-| 2026-10-21 | 0.10     | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`)                             |
-| 2026-10-21 | 0.11     | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
-| 2026-10-21 | 0.12     | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report                                  |
-| 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                             |
-| 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                  |
-| 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                   |
-| 2026-10-21 | 1.2 | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests |
+| Date       | Step     | Notes                                                                                                                                                                   |
+| ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created                                                                                                                       |
+| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified                                                                       |
+| 2026-10-18 | 0.5      | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit                                                                                         |
+| 2026-10-21 | 0.6      | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts                                                                          |
+| 2026-10-21 | 0.7      | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config                                                                                          |
+| 2026-10-21 | 0.8      | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000                                                                                     |
+| 2026-10-21 | 0.9      | `AppError`, global error handler, 404 handler; consistent JSON error shape                                                                                              |
+| 2026-10-21 | 0.10     | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`)                                                                              |
+| 2026-10-21 | 0.11     | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB                                                  |
+| 2026-10-21 | 0.12     | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report                                                                                   |
+| 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                                                                              |
+| 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                                                                   |
+| 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                                                                    |
+| 2026-10-21 | 1.2      | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests                                                                |
+| 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests |
+
+### Notes: step 1.3 (Tutor profile) explained
+
+- **Data model:** `User 1—0..1 TutorProfile`. A tutor has one profile (`userId` is `@unique`). `Subject` and `Area` are **many-to-many** with the profile: Prisma creates hidden join tables (`_SubjectToTutorProfile`, `_AreaToTutorProfile`), and we manage them with `connect` / `set`.
+- **Migration:** `npm run db:migrate -- --name tutor_profile` turned the schema change into SQL. After changing `schema.prisma` always run `npm run db:generate` too, so the TypeScript client knows the new models.
+- **`PUT /tutors/me` is an upsert:** creates the profile the first time and replaces it afterwards (PUT = replace whole resource, so the client sends the full profile). `set` replaces the subject/area lists.
+- **Whitelisted fields:** `verificationStatus` is not in the schema, so a tutor cannot verify themselves. Only an admin will change it (step 1.4).
+- **Draft vs published:** `isPublished: false` keeps the profile private; the public endpoint answers 404 for drafts (it does not reveal that a draft exists). Home tutoring needs at least one area to be published.
+- **Privacy:** the public DTO (`toTutorDto`) has the name but no email or phone. Contact happens through requests (step 1.6).
+- **Route order matters:** `/tutors/me` is declared before `/tutors/:id`, otherwise Express would treat "me" as an id.
+- **Catalog:** `/catalog/cities` and `/catalog/subjects` are public read-only lists for the frontend dropdowns.
+- **Validation of ids:** we count how many of the given subject/area ids exist; a mismatch gives a clear 400 instead of a database error.
 
 ### Notes: step 1.2 (Users) explained
 
