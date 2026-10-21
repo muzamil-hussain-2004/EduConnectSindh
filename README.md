@@ -144,6 +144,10 @@ Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 | POST | `/auth/login` | Log in, receive an access token and refresh cookie | Public |
 | POST | `/auth/refresh` | Rotate the refresh token, get a new access token | Cookie |
 | POST | `/auth/logout` | Revoke the refresh token | Cookie |
+| PATCH | `/users/me` | Update my name / phone | Bearer token |
+| POST | `/users/me/password` | Change password (logs out all devices) | Bearer token |
+| GET | `/users` | List users (pagination, role/status/search filters) | Admin |
+| PATCH | `/users/:id/status` | Suspend or reactivate a user | Admin |
 | GET | `/auth/me` | Current user | Bearer token |
 
 ## Security highlights

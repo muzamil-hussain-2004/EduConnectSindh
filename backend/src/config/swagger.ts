@@ -1,4 +1,5 @@
 import { authPaths, authSchemas } from '../modules/auth/auth.docs';
+import { usersPaths, usersSchemas } from '../modules/users/users.docs';
 import { env } from './env';
 
 // Each module will export its own `paths` and we merge them here as we build them.
@@ -14,9 +15,11 @@ export const openApiSpec = {
   tags: [
     { name: 'System', description: 'Health and diagnostics' },
     { name: 'Auth', description: 'Registration, login, tokens' },
+    { name: 'Users', description: 'Profile and admin user management' },
   ],
   paths: {
     ...authPaths,
+    ...usersPaths,
     '/health': {
       get: {
         tags: ['System'],
@@ -48,6 +51,7 @@ export const openApiSpec = {
     },
     schemas: {
       ...authSchemas,
+      ...usersSchemas,
       Health: {
         type: 'object',
         properties: {

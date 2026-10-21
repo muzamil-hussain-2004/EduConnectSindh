@@ -155,7 +155,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 ### Phase 1 — Core modules (matches proposal weeks)
 
 - ✅ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
-- 🟨 1.2 Users (basic repository/service done in 1.1; profile update endpoints still to do)
+- ✅ 1.2 Users (profile update, change password, admin list + suspend)
 - ⬜ 1.3 Tutor profile (+ locations/areas)
 - ⬜ 1.4 Verification (upload docs, admin approve/reject)
 - ⬜ 1.5 Search & filters (+ Redis cache)
@@ -192,6 +192,16 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                             |
 | 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                  |
 | 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                   |
+| 2026-10-21 | 1.2 | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests |
+
+### Notes: step 1.2 (Users) explained
+
+- **Whitelisting input:** `PATCH /users/me` only accepts `fullName` and `phone` (Zod strips unknown keys), so a user can never send `role: "ADMIN"` to promote themselves. This blocks _mass assignment_ attacks.
+- **`/me` routes** act on the logged-in user taken from the token, never from an id in the URL, so users can't edit someone else.
+- **Change password:** verifies the current password, rejects reuse, hashes the new one and revokes all refresh tokens (every device logged out).
+- **Admin list:** `GET /users?page=1&limit=20&role=TUTOR&status=ACTIVE&search=ali`. The response is `{ data: [...], meta: { page, limit, total, totalPages } }`. The list and the count run in one DB transaction. `limit` is capped at 100 so nobody can request the whole table. This pagination shape is reused by later modules.
+- **Suspend:** admin only; you cannot suspend yourself or another admin. Suspending revokes refresh tokens, so the user is locked out within 15 minutes (when the access token expires).
+- **Query validation:** `req.query` is read-only in Express 5, so the controller parses it with Zod directly instead of replacing it.
 
 ### Notes: step 1.1 (Auth) explained
 
