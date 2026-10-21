@@ -4,6 +4,12 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { GuestRoute, ProtectedRoute } from '@/components/layout/RouteGuards';
 import { AdminReviewsPage } from '@/pages/dashboard/AdminReviewsPage';
 import { AdminVerificationPage } from '@/pages/dashboard/AdminVerificationPage';
+import { CourseEditorPage } from '@/pages/dashboard/CourseEditorPage';
+import { MyCoursesPage } from '@/pages/dashboard/MyCoursesPage';
+import { MyLearningPage } from '@/pages/dashboard/MyLearningPage';
+import { CourseDetailPage } from '@/pages/CourseDetailPage';
+import { CoursesPage } from '@/pages/CoursesPage';
+import { LessonPage } from '@/pages/LessonPage';
 import { NotificationsPage } from '@/pages/dashboard/NotificationsPage';
 import { OverviewPage } from '@/pages/dashboard/OverviewPage';
 import { IncomingRequestsPage, MyRequestsPage } from '@/pages/dashboard/RequestsPages';
@@ -31,6 +37,12 @@ export const routes = [
       { path: '/', element: <HomePage /> },
       { path: '/tutors', element: <TutorsPage /> },
       { path: '/tutors/:id', element: <TutorDetailPage /> },
+      { path: '/courses', element: <CoursesPage /> },
+      { path: '/courses/:id', element: <CourseDetailPage /> },
+      {
+        element: <ProtectedRoute />,
+        children: [{ path: '/courses/:id/learn/:lessonId', element: <LessonPage /> }],
+      },
       {
         element: <ProtectedRoute />,
         children: [
@@ -45,11 +57,15 @@ export const routes = [
                 children: [
                   { path: 'requests', element: <MyRequestsPage /> },
                   { path: 'shortlist', element: <ShortlistPage /> },
+                  { path: 'learning', element: <MyLearningPage /> },
                 ],
               },
               {
                 element: <ProtectedRoute roles={['TUTOR']} />,
                 children: [
+                  { path: 'courses', element: <MyCoursesPage /> },
+                  { path: 'courses/new', element: <CourseEditorPage /> },
+                  { path: 'courses/:id', element: <CourseEditorPage /> },
                   { path: 'incoming', element: <IncomingRequestsPage /> },
                   { path: 'profile', element: <TutorProfilePage /> },
                   { path: 'verification', element: <VerificationPage /> },

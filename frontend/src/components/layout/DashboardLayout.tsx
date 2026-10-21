@@ -1,6 +1,8 @@
 import {
   Bell,
   BookMarked,
+  BookOpen,
+  GraduationCap,
   FileCheck2,
   Heart,
   Inbox,
@@ -31,18 +33,21 @@ const NOTIFS: Item = { to: '/dashboard/notifications', label: 'Notifications', i
 const NAV: Record<Role, Item[]> = {
   STUDENT: [
     ...COMMON,
+    { to: '/dashboard/learning', label: 'My learning', icon: GraduationCap },
     { to: '/dashboard/requests', label: 'My requests', icon: BookMarked },
     { to: '/dashboard/shortlist', label: 'Shortlist', icon: Heart },
     NOTIFS,
   ],
   PARENT: [
     ...COMMON,
+    { to: '/dashboard/learning', label: 'My learning', icon: GraduationCap },
     { to: '/dashboard/requests', label: 'My requests', icon: BookMarked },
     { to: '/dashboard/shortlist', label: 'Shortlist', icon: Heart },
     NOTIFS,
   ],
   TUTOR: [
     ...COMMON,
+    { to: '/dashboard/courses', label: 'My courses', icon: BookOpen },
     { to: '/dashboard/incoming', label: 'Requests', icon: Inbox },
     { to: '/dashboard/profile', label: 'My profile', icon: UserCog },
     { to: '/dashboard/verification', label: 'Verification', icon: FileCheck2 },

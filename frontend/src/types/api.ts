@@ -131,7 +131,10 @@ export type NotificationType =
   | 'REQUEST_DECLINED'
   | 'REVIEW_RECEIVED'
   | 'VERIFICATION_APPROVED'
-  | 'VERIFICATION_REJECTED';
+  | 'VERIFICATION_REJECTED'
+  | 'COURSE_ENROLLED'
+  | 'CLASS_SCHEDULED'
+  | 'CLASS_CANCELLED';
 
 export interface AppNotification {
   id: string;

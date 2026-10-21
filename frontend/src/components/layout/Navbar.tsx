@@ -38,6 +38,9 @@ export function Navbar() {
           <NavLink to="/tutors" className={link}>
             Find tutors
           </NavLink>
+          <NavLink to="/courses" className={link}>
+            Courses
+          </NavLink>
           {user && (
             <NavLink to="/dashboard" className={link}>
               Dashboard
@@ -106,6 +109,9 @@ export function Navbar() {
             </NavLink>
             <NavLink to="/tutors" className={mobileLink} onClick={() => setOpen(false)}>
               Find tutors
+            </NavLink>
+            <NavLink to="/courses" className={mobileLink} onClick={() => setOpen(false)}>
+              Courses
             </NavLink>
             {user ? (
               <NavLink to="/dashboard" className={mobileLink} onClick={() => setOpen(false)}>
