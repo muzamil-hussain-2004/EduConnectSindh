@@ -144,7 +144,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.6 `docker-compose.yml` (Postgres + Redis) and `.env.example`
 - ✅ 0.7 Env validation with Zod (`config/env.ts`)
 - ✅ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
-- ⬜ 0.9 Global error handler + `AppError` + async wrapper
+- ✅ 0.9 Global error handler + `AppError` + 404 handler (no async wrapper needed in Express 5)
 - ⬜ 0.10 Security middlewares (helmet, cors, rate-limit)
 - ⬜ 0.11 Prisma setup + first migration + seed script
 - ⬜ 0.12 Vitest + Supertest, first test (`/health`)
@@ -180,6 +180,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.6 | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts |
 | 2026-10-21 | 0.7 | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config |
 | 2026-10-21 | 0.8 | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000 |
+| 2026-10-21 | 0.9 | `AppError`, global error handler, 404 handler; consistent JSON error shape |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -262,6 +263,26 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - **Graceful shutdown:** on Ctrl+C (`SIGINT`) or a deploy (`SIGTERM`), the server stops taking new requests, finishes the running ones, then exits. After 10 seconds it forces an exit.
 - **Crash safety:** an `uncaughtException` is logged and the process exits (a restart manager revives it); an `unhandledRejection` is logged.
 - **Try it:** `npm run dev`, then open http://localhost:5000/health in the browser.
+
+### Notes: step 0.9 explained (error handling)
+
+- **Problem:** without a plan, every controller invents its own error responses, and crashes leak stack traces to users.
+- **Solution:** services *throw*, and **one** global handler turns every error into the same JSON:
+  ```json
+  { "success": false, "error": { "code": "NOT_FOUND", "message": "Tutor not found", "details": [] } }
+  ```
+  The frontend can rely on that shape everywhere.
+- **[AppError](backend/src/shared/errors/AppError.ts)** is an error we *expect* and can show to the user. It carries an HTTP status, a message and a machine-readable `code`. Shortcuts: `AppError.badRequest()`, `.unauthorized()` (401), `.forbidden()` (403), `.notFound()` (404), `.conflict()` (409).
+  ```ts
+  if (!tutor) throw AppError.notFound('Tutor not found');
+  ```
+- **[error.middleware.ts](backend/src/middlewares/error.middleware.ts)** has two pieces:
+  - `notFoundHandler`: any URL no route matched becomes a 404.
+  - `errorHandler`: recognises `AppError`, Zod validation errors (400 with per-field details), bad JSON (400), oversized body (413), and everything else (500).
+- **500 errors** are logged with the full error, but in production the client only sees "Something went wrong", so internals never leak.
+- **Order matters:** both handlers are registered *last* in `app.ts`, after all routes.
+- **Why no async wrapper:** Express 5 forwards errors thrown or rejected inside `async` handlers to the error middleware automatically. Older Express 4 needed `express-async-errors` or a wrapper; we don't. We tested this.
+- **Tested:** AppError, an async throw, Zod validation, invalid JSON, oversized body, an unexpected crash, and an unknown route each returned the right status and JSON.
 
 ---
 
