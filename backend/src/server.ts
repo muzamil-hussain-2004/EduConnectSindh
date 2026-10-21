@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { createApp } from './app';
+import { prisma } from './config/database';
 import { env } from './config/env';
 import { logger } from './config/logger';
 
@@ -13,7 +14,10 @@ server.listen(env.PORT, () => {
 // Graceful shutdown: stop accepting requests, let in-flight ones finish, then exit.
 function shutdown(signal: string) {
   logger.info(`${signal} received, shutting down`);
-  server.close(() => process.exit(0));
+  server.close(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  });
   setTimeout(() => process.exit(1), 10_000).unref();
 }
 

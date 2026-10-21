@@ -4,6 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { env } from './config/env';
+import { prisma } from './config/database';
 import { logger } from './config/logger';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 import { apiLimiter } from './middlewares/rateLimit.middleware';
@@ -22,9 +23,11 @@ export function createApp() {
   app.use(apiLimiter);
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/health', (_req, res) => {
+  app.get('/health', async (_req, res) => {
+    await prisma.$queryRaw`SELECT 1`;
     res.json({
       status: 'ok',
+      database: 'up',
       uptime: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
     });

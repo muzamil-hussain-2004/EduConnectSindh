@@ -146,7 +146,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
 - ✅ 0.9 Global error handler + `AppError` + 404 handler (no async wrapper needed in Express 5)
 - ✅ 0.10 Security middlewares (helmet, cors, rate-limit)
-- ⬜ 0.11 Prisma setup + first migration + seed script
+- ✅ 0.11 Prisma setup + first migration + seed script
 - ⬜ 0.12 Vitest + Supertest, first test (`/health`)
 - ⬜ 0.13 Swagger docs at `/api/docs`
 - ⬜ 0.14 GitHub Actions CI (lint + test + build)
@@ -182,6 +182,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.8 | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000 |
 | 2026-10-21 | 0.9 | `AppError`, global error handler, 404 handler; consistent JSON error shape |
 | 2026-10-21 | 0.10 | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`) |
+| 2026-10-21 | 0.11 | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -302,6 +303,31 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
 - **CORS is a browser rule only.** Postman and curl ignore it, so it is not a replacement for authentication.
 - Rate limiting is skipped when `NODE_ENV=test`, so tests aren't throttled.
 - **Tested:** security headers present; request #100 onwards got 429; CORS answers only with `http://localhost:5173`, even for another origin like `evil.com`.
+
+### Notes: step 0.11 explained (Prisma and the database)
+
+- **What Prisma is:** an ORM. You describe tables once in [schema.prisma](backend/src/database/prisma/schema.prisma); Prisma then (1) creates SQL **migrations**, and (2) generates a **type-safe client**. Example: `prisma.user.findUnique({ where: { email } })` returns a typed `User | null`, with autocomplete, and no hand-written SQL.
+- **The workflow you will repeat for every feature:**
+  1. Edit `schema.prisma`.
+  2. `npm run db:migrate -- --name add_tutor_profile`: creates a SQL file in `migrations/`, applies it to your DB and is committed to git.
+  3. `npm run db:generate`: regenerates the client (also runs on `npm install`).
+  4. Use `prisma` from `src/config/database.ts` inside repositories.
+- **Migrations** are a versioned history of the DB structure. A teammate (or the production server) runs `npm run db:deploy` and gets exactly the same tables. **Never edit an applied migration**; create a new one.
+- **Files:**
+  - [prisma.config.ts](backend/prisma.config.ts): Prisma 7 config (schema path, migrations path, seed command, DB URL from `.env`).
+  - [database.ts](backend/src/config/database.ts): the single shared `prisma` client (uses the `pg` driver adapter, required in Prisma 7).
+  - [seed.ts](backend/src/database/seeds/seed.ts): inserts starter data (Jamshoro, 6 areas, 10 subjects). It uses `upsert`, so running it again never duplicates.
+  - `src/database/generated/`: generated code, **git-ignored**, never edit.
+- **Tables created (first migration `init`):**
+  - `users` (email unique, `passwordHash`, `role` = STUDENT/PARENT/TUTOR/ADMIN, `status`).
+  - `refresh_tokens` (stores only a *hash* of each token, so a DB leak can't log anyone in).
+  - `cities`, `areas` (so Hyderabad later = new rows, no code change), `subjects`.
+  - Tutor profiles, requests, reviews and so on arrive with their own modules.
+- **Naming:** models are `PascalCase` in code; `@@map("users")` keeps SQL tables `snake_case` plural.
+- **Commands:** `db:migrate`, `db:deploy`, `db:generate`, `db:seed`, `db:reset` (wipes the DB and reseeds; dev only!), `db:studio` (a browser GUI to view and edit data).
+- **Version note:** `npm i prisma` currently points to an 8.0 release candidate, so we pinned stable **7.10.1** for both `prisma` and `@prisma/client`.
+- `/health` now runs `SELECT 1`, so it reports `"database":"up"`, and the DB connection closes on shutdown.
+- **Needs Docker running:** `npm run docker:up` first, otherwise the DB is unreachable.
 
 ---
 
