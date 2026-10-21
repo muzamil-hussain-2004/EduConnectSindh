@@ -140,8 +140,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.2 Create backend folder structure (empty, with `.gitkeep`)
 - ✅ 0.3 `git init`, `.gitignore`, `.editorconfig`, root README
 - ✅ 0.4 `npm init`, install TypeScript, `tsconfig.json` (strict), `tsx` for dev
-- ⬜ 0.5 ESLint + Prettier + Husky + lint-staged
-- ⬜ 0.6 `docker-compose.yml` (Postgres + Redis) and `.env.example`
+- ✅ 0.5 ESLint + Prettier + Husky + lint-staged
+- ✅ 0.6 `docker-compose.yml` (Postgres + Redis) and `.env.example`
 - ⬜ 0.7 Env validation with Zod (`config/env.ts`)
 - ⬜ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
 - ⬜ 0.9 Global error handler + `AppError` + async wrapper
@@ -175,7 +175,9 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | Date | Step | Notes |
 |---|---|---|
 | 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created |
-| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript 7 + tsx; scripts `dev`, `build`, `start`, `typecheck` verified |
+| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified |
+| 2026-10-18 | 0.5 | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit |
+| 2026-10-21 | 0.6 | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -188,6 +190,43 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - **Scripts:** `dev` (watch mode), `typecheck` (no output, just checks), `build` (compile to `dist/`), `start` (run the compiled build).
 - **TypeScript 7 gotcha:** `baseUrl` and `moduleResolution: node10` were removed, so we use `module: nodenext` and plain relative imports (no `@/` aliases).
 - `src/server.ts` is a temporary placeholder; step 0.8 replaces it with the real server.
+
+### Notes: step 0.5 explained (code quality automation)
+
+| Tool | Job | Config file |
+|---|---|---|
+| **Prettier** | Formats code (quotes, spacing, line width). Zero debates about style. | `.prettierrc.json` |
+| **ESLint** | Finds bugs and bad patterns (unused vars, `==`, forgotten imports…). | `eslint.config.mjs` |
+| **lint-staged** | Runs ESLint + Prettier only on files you staged. Fast. | `lint-staged` in `package.json` |
+| **Husky** | Git hook: runs lint-staged automatically on every `git commit`. | `.husky/pre-commit` |
+
+- Husky lives at the **repo root** (`.husky/`) because that's where `.git` is; the hook does `cd backend && npx lint-staged`.
+- `npm run prepare` runs automatically after `npm install` and re-installs the hook for anyone who clones the repo.
+- Commands: `npm run lint`, `npm run lint:fix`, `npm run format`, `npm run format:check`.
+- ESLint rules we added: no unused variables, `import type` for type-only imports, `===` only, warn on `console.log` (we'll use the Pino logger instead).
+- `.gitattributes` forces LF line endings so Windows/Linux/CI agree.
+- **Version gotcha:** `typescript-eslint` doesn't support TypeScript 7 yet (needs `<6.1`), so we pinned **TypeScript 6.0**. Upgrade later when support lands.
+- We verified the hook: a badly formatted file was auto-fixed during `git commit`.
+
+### Notes: step 0.6 explained (Docker, Postgres, Redis, env files)
+
+- **Docker** runs software in isolated containers. Instead of installing PostgreSQL and Redis on Windows, one command starts them, and your teammates get the identical setup.
+- **`docker-compose.yml`** describes the services:
+  - `postgres:16-alpine`: the database. Data is stored in the named volume `postgres_data`, so it survives restarts.
+  - `redis:7-alpine`: cache and job-queue store, with `--appendonly yes` so data is saved to disk.
+  - `healthcheck`: Docker checks every few seconds that each service is really ready.
+  - `ports: "5433:5432"`: host port **5433** maps to Postgres's internal 5432. We use 5433 because a local Postgres already occupies 5432 on this machine.
+- **`.env` vs `.env.example`:**
+  - `.env` holds real secrets and is **git-ignored**.
+  - `.env.example` is committed with placeholders, so others know which variables exist. Copy it: `copy .env.example .env`.
+  - Docker Compose reads `.env` automatically for the `${...}` values.
+  - Change `POSTGRES_PASSWORD` and the JWT secrets in your own `.env`. If you change the Postgres password after the first start, run `docker compose down -v` once so the database is recreated.
+- **Commands** (run inside `backend/`):
+  - `npm run docker:up`: start in the background.
+  - `npm run docker:down`: stop (data is kept).
+  - `npm run docker:logs`: follow the logs.
+  - `docker compose down -v`: stop and **delete all data**.
+- **Check it works:** `docker ps` should show both as `healthy`. `docker exec educonnect-redis redis-cli ping` should answer `PONG`.
 
 ---
 
