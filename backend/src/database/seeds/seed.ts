@@ -1,5 +1,7 @@
 import { prisma } from '../../config/database';
+import { env } from '../../config/env';
 import { logger } from '../../config/logger';
+import { hashPassword } from '../../shared/utils/password';
 
 const SUBJECTS = [
   'Mathematics',
@@ -44,6 +46,21 @@ async function main() {
   }
 
   logger.info(`Seeded city Jamshoro, ${JAMSHORO_AREAS.length} areas, ${SUBJECTS.length} subjects`);
+
+  if (env.ADMIN_EMAIL && env.ADMIN_PASSWORD) {
+    await prisma.user.upsert({
+      where: { email: env.ADMIN_EMAIL.toLowerCase() },
+      update: {},
+      create: {
+        email: env.ADMIN_EMAIL.toLowerCase(),
+        passwordHash: await hashPassword(env.ADMIN_PASSWORD),
+        fullName: 'Platform Admin',
+        role: 'ADMIN',
+        emailVerified: true,
+      },
+    });
+    logger.info(`Admin account ready: ${env.ADMIN_EMAIL}`);
+  }
 }
 
 main()

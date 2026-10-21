@@ -7,24 +7,24 @@
 
 ## 1. Tech Stack (what, why, and what's new to learn)
 
-| Layer | Tool | Why | New? |
-|---|---|---|---|
-| Runtime / language | Node.js + **TypeScript** (strict) | Type safety catches bugs before running | Learn basics |
-| Web framework | **Express 5** | Simple, popular, you chose it | — |
-| Database | **PostgreSQL** | Relational data (users, tutors, requests, reviews) | — |
-| ORM | **Prisma** | Type-safe DB access + migrations + schema file | **New** |
-| Validation | **Zod** | Validate request bodies; types come for free | **New** |
-| Auth | JWT (access + refresh), **argon2** hashing, RBAC | Proposal requirement | Learn |
-| Cache / queue store | **Redis** | Caching, rate-limit, refresh tokens, job queue backend | **New** |
-| Background jobs | **BullMQ** (on Redis) | Emails, notifications, AI calls off the request path | **New** |
-| Real-time | **Socket.IO** | Live notifications / class updates | **New** |
-| Logging | **Pino** | Fast structured JSON logs | **New** |
-| Security | helmet, cors, express-rate-limit | Standard hardening | — |
-| API docs | **Swagger / OpenAPI** | Professional, testable API docs | **New** |
-| Testing | **Vitest + Supertest** | Fast unit + API tests | **New** |
-| Code quality | ESLint, Prettier, **Husky + lint-staged**, Conventional Commits | Consistent, clean repo | **New** |
-| DevOps | **Docker Compose** (Postgres + Redis), GitHub Actions CI | One-command setup, auto checks | **New** |
-| File storage | Local `uploads/` now → S3/Cloudinary later | CNIC/verification docs (private!) | — |
+| Layer               | Tool                                                            | Why                                                    | New?         |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------ | ------------ |
+| Runtime / language  | Node.js + **TypeScript** (strict)                               | Type safety catches bugs before running                | Learn basics |
+| Web framework       | **Express 5**                                                   | Simple, popular, you chose it                          | —            |
+| Database            | **PostgreSQL**                                                  | Relational data (users, tutors, requests, reviews)     | —            |
+| ORM                 | **Prisma**                                                      | Type-safe DB access + migrations + schema file         | **New**      |
+| Validation          | **Zod**                                                         | Validate request bodies; types come for free           | **New**      |
+| Auth                | JWT (access + refresh), **argon2** hashing, RBAC                | Proposal requirement                                   | Learn        |
+| Cache / queue store | **Redis**                                                       | Caching, rate-limit, refresh tokens, job queue backend | **New**      |
+| Background jobs     | **BullMQ** (on Redis)                                           | Emails, notifications, AI calls off the request path   | **New**      |
+| Real-time           | **Socket.IO**                                                   | Live notifications / class updates                     | **New**      |
+| Logging             | **Pino**                                                        | Fast structured JSON logs                              | **New**      |
+| Security            | helmet, cors, express-rate-limit                                | Standard hardening                                     | —            |
+| API docs            | **Swagger / OpenAPI**                                           | Professional, testable API docs                        | **New**      |
+| Testing             | **Vitest + Supertest**                                          | Fast unit + API tests                                  | **New**      |
+| Code quality        | ESLint, Prettier, **Husky + lint-staged**, Conventional Commits | Consistent, clean repo                                 | **New**      |
+| DevOps              | **Docker Compose** (Postgres + Redis), GitHub Actions CI        | One-command setup, auto checks                         | **New**      |
+| File storage        | Local `uploads/` now → S3/Cloudinary later                      | CNIC/verification docs (private!)                      | —            |
 
 > **Note:** The proposal text says "NestJS", but you chose Express. Express is fine —
 > we get the same professionalism by enforcing a strict layered structure (below).
@@ -136,6 +136,7 @@ Git branching: `main` (stable) ← `develop` ← `feat/<module>` branches, merge
 Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Phase 0 — Foundation
+
 - ✅ 0.1 Read proposal, choose stack, design architecture
 - ✅ 0.2 Create backend folder structure (empty, with `.gitkeep`)
 - ✅ 0.3 `git init`, `.gitignore`, `.editorconfig`, root README
@@ -152,8 +153,9 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.14 GitHub Actions CI (lint + test + build)
 
 ### Phase 1 — Core modules (matches proposal weeks)
-- ⬜ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
-- ⬜ 1.2 Users
+
+- ✅ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
+- 🟨 1.2 Users (basic repository/service done in 1.1; profile update endpoints still to do)
 - ⬜ 1.3 Tutor profile (+ locations/areas)
 - ⬜ 1.4 Verification (upload docs, admin approve/reject)
 - ⬜ 1.5 Search & filters (+ Redis cache)
@@ -162,30 +164,47 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ⬜ 1.8 Notifications (BullMQ + Socket.IO)
 
 ### Phase 2 — Learning platform
+
 - ⬜ 2.1 Courses, lessons, enrollment, progress
 - ⬜ 2.2 Virtual class scheduling
 - ⬜ 2.3 AI learning assistant
 - ⬜ 2.4 Admin dashboard APIs
 
 ### Phase 3 — Polish
+
 - ⬜ 3.1 Deployment (Docker, cloud demo)
 - ⬜ 3.2 Final docs, ERD, viva notes
 
 ### Changelog
-| Date | Step | Notes |
-|---|---|---|
-| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created |
-| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified |
-| 2026-10-18 | 0.5 | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit |
-| 2026-10-21 | 0.6 | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts |
-| 2026-10-21 | 0.7 | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config |
-| 2026-10-21 | 0.8 | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000 |
-| 2026-10-21 | 0.9 | `AppError`, global error handler, 404 handler; consistent JSON error shape |
-| 2026-10-21 | 0.10 | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`) |
-| 2026-10-21 | 0.11 | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
-| 2026-10-21 | 0.12 | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report |
-| 2026-10-21 | 0.13 | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total) |
-| 2026-10-21 | 0.14 | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete** |
+
+| Date       | Step     | Notes                                                                                                                  |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created                                                                      |
+| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified                      |
+| 2026-10-18 | 0.5      | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit                                        |
+| 2026-10-21 | 0.6      | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts                         |
+| 2026-10-21 | 0.7      | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config                                         |
+| 2026-10-21 | 0.8      | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000                                    |
+| 2026-10-21 | 0.9      | `AppError`, global error handler, 404 handler; consistent JSON error shape                                             |
+| 2026-10-21 | 0.10     | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`)                             |
+| 2026-10-21 | 0.11     | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
+| 2026-10-21 | 0.12     | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report                                  |
+| 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                             |
+| 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                  |
+| 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                   |
+
+### Notes: step 1.1 (Auth) explained
+
+- **Layers per module:** `routes → controller → service → repository`. Routes map URLs, controllers handle HTTP, services hold business rules, repositories are the only code that talks to Prisma.
+- **Passwords:** hashed with **argon2id** (never stored plain). Login for an unknown email still runs a dummy hash, and returns the same error as a wrong password, so attackers can't discover which emails exist.
+- **Two tokens:**
+  - _Access token_: short-lived (15 min) JWT sent in `Authorization: Bearer ...`. Stateless, no DB hit.
+  - _Refresh token_: random opaque string in an **httpOnly cookie** (JS can't read it, so XSS can't steal it). Only its HMAC hash is stored in `refresh_tokens`.
+- **Rotation + reuse detection:** every refresh issues a new refresh token and revokes the old one. If a revoked token is used again (likely stolen), all of that user's tokens are revoked.
+- **RBAC:** `authenticate` verifies the JWT and sets `req.user`; `authorize('ADMIN')` checks the role (401 = not logged in, 403 = not allowed).
+- **Registration** allows only STUDENT, PARENT, TUTOR. ADMIN is created by the seed (`ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`, then `npm run db:seed`).
+- **Bug the tests caught:** the plain `password` field was being spread into the Prisma `create` call (500 error). Fixed by destructuring it out. This is why we write tests.
+- **Known limit:** a suspended user keeps access up to 15 min (until the access token expires).
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -201,12 +220,12 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Notes: step 0.5 explained (code quality automation)
 
-| Tool | Job | Config file |
-|---|---|---|
-| **Prettier** | Formats code (quotes, spacing, line width). Zero debates about style. | `.prettierrc.json` |
-| **ESLint** | Finds bugs and bad patterns (unused vars, `==`, forgotten imports…). | `eslint.config.mjs` |
-| **lint-staged** | Runs ESLint + Prettier only on files you staged. Fast. | `lint-staged` in `package.json` |
-| **Husky** | Git hook: runs lint-staged automatically on every `git commit`. | `.husky/pre-commit` |
+| Tool            | Job                                                                   | Config file                     |
+| --------------- | --------------------------------------------------------------------- | ------------------------------- |
+| **Prettier**    | Formats code (quotes, spacing, line width). Zero debates about style. | `.prettierrc.json`              |
+| **ESLint**      | Finds bugs and bad patterns (unused vars, `==`, forgotten imports…).  | `eslint.config.mjs`             |
+| **lint-staged** | Runs ESLint + Prettier only on files you staged. Fast.                | `lint-staged` in `package.json` |
+| **Husky**       | Git hook: runs lint-staged automatically on every `git commit`.       | `.husky/pre-commit`             |
 
 - Husky lives at the **repo root** (`.husky/`) because that's where `.git` is; the hook does `cd backend && npx lint-staged`.
 - `npm run prepare` runs automatically after `npm install` and re-installs the hook for anyone who clones the repo.
@@ -254,8 +273,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 ### Notes: step 0.8 explained (logger, app, server, health)
 
 - **Why `app.ts` and `server.ts` are separate:**
-  - [app.ts](backend/src/app.ts) only *builds* the Express app (middlewares and routes) through `createApp()`.
-  - [server.ts](backend/src/server.ts) *starts* it: it opens the port, handles shutdown and catches crashes.
+  - [app.ts](backend/src/app.ts) only _builds_ the Express app (middlewares and routes) through `createApp()`.
+  - [server.ts](backend/src/server.ts) _starts_ it: it opens the port, handles shutdown and catches crashes.
   - Tests (step 0.12) can import `createApp()` and call it without opening a real port.
 - **Pino logger** ([logger.ts](backend/src/config/logger.ts)): fast structured logging, which replaces `console.log`.
   - Development: colored, readable lines (via `pino-pretty`).
@@ -272,20 +291,27 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 ### Notes: step 0.9 explained (error handling)
 
 - **Problem:** without a plan, every controller invents its own error responses, and crashes leak stack traces to users.
-- **Solution:** services *throw*, and **one** global handler turns every error into the same JSON:
+- **Solution:** services _throw_, and **one** global handler turns every error into the same JSON:
   ```json
-  { "success": false, "error": { "code": "NOT_FOUND", "message": "Tutor not found", "details": [] } }
+  {
+    "success": false,
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "Tutor not found",
+      "details": []
+    }
+  }
   ```
   The frontend can rely on that shape everywhere.
-- **[AppError](backend/src/shared/errors/AppError.ts)** is an error we *expect* and can show to the user. It carries an HTTP status, a message and a machine-readable `code`. Shortcuts: `AppError.badRequest()`, `.unauthorized()` (401), `.forbidden()` (403), `.notFound()` (404), `.conflict()` (409).
+- **[AppError](backend/src/shared/errors/AppError.ts)** is an error we _expect_ and can show to the user. It carries an HTTP status, a message and a machine-readable `code`. Shortcuts: `AppError.badRequest()`, `.unauthorized()` (401), `.forbidden()` (403), `.notFound()` (404), `.conflict()` (409).
   ```ts
-  if (!tutor) throw AppError.notFound('Tutor not found');
+  if (!tutor) throw AppError.notFound("Tutor not found");
   ```
 - **[error.middleware.ts](backend/src/middlewares/error.middleware.ts)** has two pieces:
   - `notFoundHandler`: any URL no route matched becomes a 404.
   - `errorHandler`: recognises `AppError`, Zod validation errors (400 with per-field details), bad JSON (400), oversized body (413), and everything else (500).
 - **500 errors** are logged with the full error, but in production the client only sees "Something went wrong", so internals never leak.
-- **Order matters:** both handlers are registered *last* in `app.ts`, after all routes.
+- **Order matters:** both handlers are registered _last_ in `app.ts`, after all routes.
 - **Why no async wrapper:** Express 5 forwards errors thrown or rejected inside `async` handlers to the error middleware automatically. Older Express 4 needed `express-async-errors` or a wrapper; we don't. We tested this.
 - **Tested:** AppError, an async throw, Zod validation, invalid JSON, oversized body, an unexpected crash, and an unknown route each returned the right status and JSON.
 
@@ -293,14 +319,14 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 Order in `app.ts` matters: logging → helmet → cors → compression → rate limit → body parser → routes → error handlers.
 
-| Middleware | What it protects against |
-|---|---|
-| **helmet** | Sets secure HTTP headers (`X-Content-Type-Options`, `Strict-Transport-Security`, a Content-Security-Policy…) to reduce XSS, clickjacking and sniffing attacks. |
-| **cors** | Browsers block a website from calling an API on another origin unless the API allows it. We allow **only** `CLIENT_URL` (your React app), with `credentials: true` for cookies. |
+| Middleware             | What it protects against                                                                                                                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **helmet**             | Sets secure HTTP headers (`X-Content-Type-Options`, `Strict-Transport-Security`, a Content-Security-Policy…) to reduce XSS, clickjacking and sniffing attacks.                                                                             |
+| **cors**               | Browsers block a website from calling an API on another origin unless the API allows it. We allow **only** `CLIENT_URL` (your React app), with `credentials: true` for cookies.                                                            |
 | **express-rate-limit** | Limits requests per IP. `apiLimiter` = 100/min for the whole API. `authLimiter` = 10 per 15 min, to be attached to login/register routes so passwords can't be brute-forced. Over the limit gives HTTP **429** in our standard error JSON. |
-| **compression** | gzip-compresses responses, so they are smaller and faster. |
-| `x-powered-by` off | Doesn't advertise "Express" to attackers. |
-| `trust proxy` | When deployed behind a proxy, the limiter sees the real client IP, not the proxy's. |
+| **compression**        | gzip-compresses responses, so they are smaller and faster.                                                                                                                                                                                 |
+| `x-powered-by` off     | Doesn't advertise "Express" to attackers.                                                                                                                                                                                                  |
+| `trust proxy`          | When deployed behind a proxy, the limiter sees the real client IP, not the proxy's.                                                                                                                                                        |
 
 - **Rate limiting uses memory for now.** With several server instances it must share a counter, so in a later step we will switch it to a **Redis store**.
 - **CORS is a browser rule only.** Postman and curl ignore it, so it is not a replacement for authentication.
@@ -323,7 +349,7 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
   - `src/database/generated/`: generated code, **git-ignored**, never edit.
 - **Tables created (first migration `init`):**
   - `users` (email unique, `passwordHash`, `role` = STUDENT/PARENT/TUTOR/ADMIN, `status`).
-  - `refresh_tokens` (stores only a *hash* of each token, so a DB leak can't log anyone in).
+  - `refresh_tokens` (stores only a _hash_ of each token, so a DB leak can't log anyone in).
   - `cities`, `areas` (so Hyderabad later = new rows, no code change), `subjects`.
   - Tutor profiles, requests, reviews and so on arrive with their own modules.
 - **Naming:** models are `PascalCase` in code; `@@map("users")` keeps SQL tables `snake_case` plural.
@@ -351,9 +377,9 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
   - `tests/e2e/` stays empty until later.
 - **Anatomy of a test** (Arrange, Act, Assert):
   ```ts
-  it('returns 404 for unknown routes', async () => {
-    const res = await request(app).get('/does-not-exist'); // act
-    expect(res.status).toBe(404);                          // assert
+  it("returns 404 for unknown routes", async () => {
+    const res = await request(app).get("/does-not-exist"); // act
+    expect(res.status).toBe(404); // assert
   });
   ```
 - **[vitest.config.mts](backend/vitest.config.mts)** sets `NODE_ENV=test` (this also silences logs and disables rate limiting) and fallback env values, so tests run on a fresh clone or in CI without a `.env`.
@@ -386,6 +412,7 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
 - All steps were verified to pass locally; the first real run happens when we push to GitHub.
 
 ### Phase 0 is complete 🎉
+
 You now have: strict TypeScript, linting and formatting with commit hooks, Docker Postgres and Redis, validated config, logging, error handling, security middlewares, Prisma with migrations and seed, tests, API docs, and CI.
 
 ---

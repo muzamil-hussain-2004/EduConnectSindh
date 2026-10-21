@@ -14,6 +14,10 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
   CLIENT_URL: z.url().default('http://localhost:5173'),
+
+  // Optional: if both are set, `npm run db:seed` creates this admin account.
+  ADMIN_EMAIL: z.email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,4 +1,5 @@
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -10,6 +11,7 @@ import { logger } from './config/logger';
 import { openApiSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 import { apiLimiter } from './middlewares/rateLimit.middleware';
+import { apiRoutes } from './routes';
 
 export function createApp() {
   const app = express();
@@ -24,6 +26,8 @@ export function createApp() {
   app.use(compression());
   app.use(apiLimiter);
   app.use(express.json({ limit: '1mb' }));
+  app.use(cookieParser());
+  app.use(cookieParser());
 
   // Interactive API docs; hidden in production.
   if (!isProduction) {
@@ -44,6 +48,8 @@ export function createApp() {
       timestamp: new Date().toISOString(),
     });
   });
+
+  app.use('/api/v1', apiRoutes);
 
   // Must stay last: unmatched routes -> 404, then every error -> one JSON shape.
   app.use(notFoundHandler);

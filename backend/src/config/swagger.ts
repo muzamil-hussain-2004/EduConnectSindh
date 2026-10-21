@@ -1,3 +1,4 @@
+import { authPaths, authSchemas } from '../modules/auth/auth.docs';
 import { env } from './env';
 
 // Each module will export its own `paths` and we merge them here as we build them.
@@ -10,8 +11,12 @@ export const openApiSpec = {
       'REST API for the EduConnect Sindh tutor discovery, verification and online learning platform.',
   },
   servers: [{ url: `http://localhost:${env.PORT}`, description: 'Local development' }],
-  tags: [{ name: 'System', description: 'Health and diagnostics' }],
+  tags: [
+    { name: 'System', description: 'Health and diagnostics' },
+    { name: 'Auth', description: 'Registration, login, tokens' },
+  ],
   paths: {
+    ...authPaths,
     '/health': {
       get: {
         tags: ['System'],
@@ -42,6 +47,7 @@ export const openApiSpec = {
       bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
     },
     schemas: {
+      ...authSchemas,
       Health: {
         type: 'object',
         properties: {
