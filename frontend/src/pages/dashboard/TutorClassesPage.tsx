@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState, ErrorBlock, LoadingBlock } from '@/components/ui/Feedback';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { useTutorVerified, VerificationNotice } from '@/components/tutors/VerificationNotice';
 import { useCreateClassMutation, useGetMyClassesQuery } from '@/features/classes/classesApi';
 import { useGetMyCoursesQuery } from '@/features/courses/coursesApi';
 import { getErrorMessage, getFieldErrors } from '@/services/api/baseApi';
@@ -105,6 +106,7 @@ function ScheduleModal({ onClose }: { onClose: () => void }) {
 
 export function TutorClassesPage() {
   const { data, isLoading, isError } = useGetMyClassesQuery();
+  const { verified, status, isLoading: checking } = useTutorVerified();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -112,11 +114,12 @@ export function TutorClassesPage() {
         title="Live classes"
         text="Schedule online classes and share the meeting link with booked students only."
         action={
-          <Button size="sm" onClick={() => setOpen(true)}>
+          <Button size="sm" disabled={!verified} onClick={() => setOpen(true)}>
             Schedule class
           </Button>
         }
       />
+      {!checking && !verified && <VerificationNotice status={status} />}
       {isLoading ? (
         <LoadingBlock />
       ) : isError ? (

@@ -1,6 +1,7 @@
 import type { Role } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
 import { coursesRepository } from '../courses/courses.repository';
+import { requireVerifiedTutor } from '../courses/courses.service';
 import { notificationsService } from '../notifications/notifications.service';
 import { classesRepository } from './classes.repository';
 import type { ClassInput, ClassUpdate, ListClassesQuery } from './classes.schema';
@@ -59,6 +60,7 @@ export const classesService = {
     const profileId = await coursesRepository.profileIdOf(userId);
     if (!profileId)
       throw AppError.badRequest('Create your tutor profile before scheduling classes');
+    await requireVerifiedTutor(profileId);
     requireFuture(input.startsAt);
     await requireOwnCourse(userId, input.courseId);
     const session = await classesRepository.create(profileId, input);

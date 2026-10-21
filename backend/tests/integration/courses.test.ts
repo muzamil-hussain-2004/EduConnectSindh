@@ -43,6 +43,10 @@ async function createTutor() {
       areaIds: [],
       isPublished: true,
     });
+  await prisma.tutorProfile.update({
+    where: { userId: tutor.id },
+    data: { verificationStatus: 'VERIFIED' },
+  });
   return tutor;
 }
 
@@ -93,6 +97,16 @@ afterAll(async () => {
 });
 
 describe('courses: authoring', () => {
+  it('blocks unverified tutors from creating courses', async () => {
+    const tutor = await createTutor();
+    await prisma.tutorProfile.update({
+      where: { userId: tutor.id },
+      data: { verificationStatus: 'UNVERIFIED' },
+    });
+    const res = await api('post', '/courses', tutor).send(courseBody());
+    expect(res.status).toBe(403);
+  });
+
   it('enforces roles, validation and ownership', async () => {
     const tutor = await createTutor();
     const other = await createTutor();

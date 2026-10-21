@@ -58,6 +58,15 @@ async function requireProfile(userId: string) {
   return profileId;
 }
 
+// Only admin-verified tutors may publish content; this protects students from unvetted courses.
+export async function requireVerifiedTutor(profileId: string) {
+  if (!(await coursesRepository.isVerified(profileId))) {
+    throw AppError.forbidden(
+      'Only verified tutors can do this. Upload your documents under Dashboard > Verification.',
+    );
+  }
+}
+
 // Only the tutor who made the course may change it.
 async function requireOwned(userId: string, courseId: string) {
   const course = await coursesRepository.findOwner(courseId);
@@ -84,6 +93,7 @@ export const coursesService = {
   // ----- Tutor: manage own courses -----
   async create(userId: string, input: CourseInput) {
     const profileId = await requireProfile(userId);
+    await requireVerifiedTutor(profileId);
     await requireSubject(input.subjectId);
     return toCourse(await coursesRepository.create(profileId, input));
   },
@@ -109,7 +119,8 @@ export const coursesService = {
   },
 
   async publish(userId: string, courseId: string) {
-    await requireOwned(userId, courseId);
+    const owned = await requireOwned(userId, courseId);
+    await requireVerifiedTutor(owned.tutorProfileId);
     const course = await coursesRepository.findById(courseId);
     if (!course || course.lessons.length === 0) {
       throw AppError.badRequest('Add at least one lesson before publishing');

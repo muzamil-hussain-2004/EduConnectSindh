@@ -42,6 +42,10 @@ async function createTutor() {
       areaIds: [],
       isPublished: true,
     });
+  await prisma.tutorProfile.update({
+    where: { userId: tutor.id },
+    data: { verificationStatus: 'VERIFIED' },
+  });
   return tutor;
 }
 

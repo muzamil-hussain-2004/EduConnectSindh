@@ -1,10 +1,11 @@
 import { FileText, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { VerificationBadge } from '@/components/tutors/StatusBadge';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClass } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ErrorBlock, LoadingBlock } from '@/components/ui/Feedback';
+import { LoadingBlock } from '@/components/ui/Feedback';
 import { Select } from '@/components/ui/Input';
 import {
   useDeleteDocumentMutation,
@@ -33,7 +34,24 @@ export function VerificationPage() {
 
   if (isLoading) return <LoadingBlock />;
   if (isError || !data)
-    return <ErrorBlock message="Create your tutor profile first, then verify it." />;
+    return (
+      <>
+        <PageHeader
+          title="Verification"
+          text="Upload your CNIC and degree. An admin reviews them and awards the Verified badge."
+        />
+        <Card className="max-w-2xl space-y-3">
+          <p className="font-medium">Step 1: create your tutor profile</p>
+          <p className="text-sm text-muted">
+            Verification is attached to your tutor profile. Fill in your subjects, rate and
+            qualification first, then come back here to upload documents.
+          </p>
+          <Link to="/dashboard/profile" className={buttonClass('primary', 'sm')}>
+            Create tutor profile
+          </Link>
+        </Card>
+      </>
+    );
 
   const locked = data.status === 'PENDING' || data.status === 'VERIFIED';
 

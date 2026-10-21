@@ -179,6 +179,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 2.3 AI learning assistant
 - ✅ 2.4 Admin dashboard APIs and UI
 - ✅ 3.1 Deployment config (Render blueprint, Vercel rewrite, cross-site cookie) – see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- ✅ 3.1b Only verified tutors can create/publish courses and schedule classes (403 otherwise); tutors see a "Get verified" notice
 
 ### Phase 3 — Polish
 

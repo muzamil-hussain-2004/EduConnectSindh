@@ -61,6 +61,9 @@ export const coursesRepository = {
   profileIdOf: async (userId: string) =>
     (await prisma.tutorProfile.findUnique({ where: { userId }, select: { id: true } }))?.id ?? null,
 
+  isVerified: async (id: string) =>
+    (await prisma.tutorProfile.count({ where: { id, verificationStatus: 'VERIFIED' } })) > 0,
+
   subjectExists: async (id: string) => (await prisma.subject.count({ where: { id } })) > 0,
 
   tutorUserId: async (tutorProfileId: string) =>

@@ -57,6 +57,10 @@ describe('course assistant', () => {
         areaIds: [],
         isPublished: true,
       });
+    await prisma.tutorProfile.update({
+      where: { userId: tutor.id },
+      data: { verificationStatus: 'VERIFIED' },
+    });
     const student = await register('STUDENT');
     const outsider = await register('STUDENT');
 
