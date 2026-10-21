@@ -143,7 +143,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.5 ESLint + Prettier + Husky + lint-staged
 - ✅ 0.6 `docker-compose.yml` (Postgres + Redis) and `.env.example`
 - ✅ 0.7 Env validation with Zod (`config/env.ts`)
-- ⬜ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
+- ✅ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
 - ⬜ 0.9 Global error handler + `AppError` + async wrapper
 - ⬜ 0.10 Security middlewares (helmet, cors, rate-limit)
 - ⬜ 0.11 Prisma setup + first migration + seed script
@@ -179,6 +179,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-18 | 0.5 | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit |
 | 2026-10-21 | 0.6 | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts |
 | 2026-10-21 | 0.7 | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config |
+| 2026-10-21 | 0.8 | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000 |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -243,6 +244,24 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - **Adding a variable later:** add it to the schema, to `.env.example` and to your `.env`.
 - We tested three cases: placeholder secrets (rejected), a valid `.env` (accepted), `PORT=abc` (rejected).
 - Your local `.env` now has real random JWT secrets (generated with Node's `crypto`).
+
+### Notes: step 0.8 explained (logger, app, server, health)
+
+- **Why `app.ts` and `server.ts` are separate:**
+  - [app.ts](backend/src/app.ts) only *builds* the Express app (middlewares and routes) through `createApp()`.
+  - [server.ts](backend/src/server.ts) *starts* it: it opens the port, handles shutdown and catches crashes.
+  - Tests (step 0.12) can import `createApp()` and call it without opening a real port.
+- **Pino logger** ([logger.ts](backend/src/config/logger.ts)): fast structured logging, which replaces `console.log`.
+  - Development: colored, readable lines (via `pino-pretty`).
+  - Production: JSON lines, which log tools can search.
+  - Levels: `debug`, `info`, `warn`, `error`, `fatal`. Usage: `logger.info('text')` or `logger.error({ err }, 'text')`.
+  - `redact` hides the `Authorization` and `Cookie` headers so tokens never leak into logs.
+- **pino-http** logs every request automatically: method, URL, status and response time.
+- **`express.json()`** parses JSON request bodies into `req.body` (limit 1 MB).
+- **`/health`** is a tiny endpoint that answers `{ status: "ok" }`. Monitors, Docker and cloud hosts use it to know the app is alive. Later we will extend it to check the database and Redis.
+- **Graceful shutdown:** on Ctrl+C (`SIGINT`) or a deploy (`SIGTERM`), the server stops taking new requests, finishes the running ones, then exits. After 10 seconds it forces an exit.
+- **Crash safety:** an `uncaughtException` is logged and the process exits (a restart manager revives it); an `unhandledRejection` is logged.
+- **Try it:** `npm run dev`, then open http://localhost:5000/health in the browser.
 
 ---
 
