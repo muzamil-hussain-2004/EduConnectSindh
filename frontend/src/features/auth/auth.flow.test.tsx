@@ -40,7 +40,7 @@ describe('route guards', () => {
     const store = makeStore();
     store.dispatch(loggedOut());
     renderAt('/dashboard', store);
-    expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /log in/i })).toBeInTheDocument();
   });
 
   it('lets authenticated users into /dashboard', () => {
@@ -70,7 +70,7 @@ describe('LoginForm', () => {
     const store = makeStore();
     store.dispatch(loggedOut());
     renderAt('/login', store);
-    await userEvent.click(screen.getByRole('button', { name: /log in/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^login$/i }));
     expect(await screen.findByText('Enter a valid email')).toBeInTheDocument();
     expect(screen.getByText('Password is required')).toBeInTheDocument();
   });

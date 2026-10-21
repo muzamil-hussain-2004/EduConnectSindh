@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { AuthShell } from '@/components/layout/AuthShell';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { getErrorMessage, getFieldErrors } from '@/services/api/baseApi';
 import { useRegisterMutation } from '@/features/auth/authApi';
@@ -42,17 +42,21 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <h1 className="mb-1 text-xl font-semibold">Create your account</h1>
-      <p className="mb-6 text-sm text-slate-500">Find or become a verified tutor in Sindh.</p>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <AuthShell
+      image="/auth-register.jpg"
+      headline="Find your perfect tutor"
+      subline="Join students and parents across Sindh"
+    >
+      <h1 className="sr-only">Create your account</h1>
+      <p className="mb-6 text-sm text-slate-600">Find or become a verified tutor in Sindh.</p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <fieldset>
-          <legend className="mb-1 text-sm font-medium text-slate-700">I am a</legend>
+          <legend className="mb-2 text-sm font-medium">I am a</legend>
           <div className="grid grid-cols-3 gap-2">
             {ROLES.map((r) => (
               <label
                 key={r.value}
-                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-center text-sm has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-700"
+                className="cursor-pointer rounded-full border border-brand-500 px-3 py-2 text-center text-sm has-checked:bg-brand-500 has-checked:text-white"
               >
                 <input type="radio" value={r.value} className="sr-only" {...register('role')} />
                 {r.label}
@@ -81,16 +85,12 @@ export function RegisterForm() {
           error={errors.password?.message}
           {...register('password')}
         />
-        <Button type="submit" className="w-full" loading={isLoading}>
-          Create account
-        </Button>
+        <div className="flex justify-end pt-2">
+          <Button type="submit" className="w-3/5" loading={isLoading}>
+            Register
+          </Button>
+        </div>
       </form>
-      <p className="mt-4 text-center text-sm text-slate-500">
-        Already registered?{' '}
-        <Link to="/login" className="text-brand-600 hover:underline">
-          Log in
-        </Link>
-      </p>
-    </Card>
+    </AuthShell>
   );
 }

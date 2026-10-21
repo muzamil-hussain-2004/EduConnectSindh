@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { AuthShell } from '@/components/layout/AuthShell';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { getErrorMessage } from '@/services/api/baseApi';
 import { useLoginMutation } from '@/features/auth/authApi';
@@ -29,13 +29,20 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <h1 className="mb-1 text-xl font-semibold">Welcome back</h1>
-      <p className="mb-6 text-sm text-slate-500">Log in to your EduConnect account.</p>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <AuthShell
+      image="/auth-login.jpg"
+      headline="Learn from verified tutors"
+      subline="Pick up right where you left off"
+    >
+      <h1 className="sr-only">Log in</h1>
+      <p className="mb-6 text-sm text-slate-600">
+        Log in to find tutors, manage your requests and keep learning.
+      </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <Input
           label="Email"
           type="email"
+          placeholder="Enter your email"
           autoComplete="email"
           error={errors.email?.message}
           {...register('email')}
@@ -43,20 +50,17 @@ export function LoginForm() {
         <Input
           label="Password"
           type="password"
+          placeholder="Enter your password"
           autoComplete="current-password"
           error={errors.password?.message}
           {...register('password')}
         />
-        <Button type="submit" className="w-full" loading={isLoading}>
-          Log in
-        </Button>
+        <div className="flex justify-end pt-2">
+          <Button type="submit" className="w-3/5" loading={isLoading}>
+            Login
+          </Button>
+        </div>
       </form>
-      <p className="mt-4 text-center text-sm text-slate-500">
-        No account?{' '}
-        <Link to="/register" className="text-brand-600 hover:underline">
-          Sign up
-        </Link>
-      </p>
-    </Card>
+    </AuthShell>
   );
 }

@@ -9,16 +9,16 @@ import { RegisterPage } from '@/pages/RegisterPage';
 
 export const routes = [
   {
+    element: <GuestRoute />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+    ],
+  },
+  {
     element: <AppLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      {
-        element: <GuestRoute />,
-        children: [
-          { path: '/login', element: <LoginPage /> },
-          { path: '/register', element: <RegisterPage /> },
-        ],
-      },
       {
         element: <ProtectedRoute />,
         children: [{ path: '/dashboard', element: <DashboardPage /> }],

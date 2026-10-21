@@ -219,6 +219,14 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - **Forms:** Zod schemas mirror backend rules; server validation `details` are mapped onto fields.
 - **Next:** F2 tutor search and profile pages.
 
+### Notes: Figma design applied to auth (F1b)
+
+- Source: the exported Figma frames (Login/Register, desktop and mobile). The mockups sit in `docs/design-src/` for reference; the photos are cropped into `frontend/public/`.
+- Theme tokens (in `src/index.css` `@theme`): teal `brand-500 #47babb`, `brand-300 #92d6d5`, Poppins font (`@fontsource/poppins`), pill-shaped inputs and buttons, password show/hide toggle.
+- `AuthShell` is the shared split layout: photo panel on desktop (hidden on mobile), Login/Register pill tabs. Login and Register use it and sit outside the navbar layout.
+- The design says "User name" but the backend logs in with email, so the field is Email. "Remember me" and "Forgot password" are left out until the backend supports them.
+- The Figma file only had auth screens; all other pages will reuse these tokens and components.
+
 ### Notes: step 1.8 (Notifications, BullMQ, Socket.IO) explained
 
 - **Full beginner explanation:** [docs/DEPENDENCIES.md](./docs/DEPENDENCIES.md) (what BullMQ and Socket.IO are, with diagrams) and section 7b of [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
