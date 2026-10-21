@@ -145,7 +145,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.7 Env validation with Zod (`config/env.ts`)
 - ✅ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
 - ✅ 0.9 Global error handler + `AppError` + 404 handler (no async wrapper needed in Express 5)
-- ⬜ 0.10 Security middlewares (helmet, cors, rate-limit)
+- ✅ 0.10 Security middlewares (helmet, cors, rate-limit)
 - ⬜ 0.11 Prisma setup + first migration + seed script
 - ⬜ 0.12 Vitest + Supertest, first test (`/health`)
 - ⬜ 0.13 Swagger docs at `/api/docs`
@@ -181,6 +181,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.7 | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config |
 | 2026-10-21 | 0.8 | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000 |
 | 2026-10-21 | 0.9 | `AppError`, global error handler, 404 handler; consistent JSON error shape |
+| 2026-10-21 | 0.10 | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`) |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -283,6 +284,24 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - **Order matters:** both handlers are registered *last* in `app.ts`, after all routes.
 - **Why no async wrapper:** Express 5 forwards errors thrown or rejected inside `async` handlers to the error middleware automatically. Older Express 4 needed `express-async-errors` or a wrapper; we don't. We tested this.
 - **Tested:** AppError, an async throw, Zod validation, invalid JSON, oversized body, an unexpected crash, and an unknown route each returned the right status and JSON.
+
+### Notes: step 0.10 explained (security middlewares)
+
+Order in `app.ts` matters: logging → helmet → cors → compression → rate limit → body parser → routes → error handlers.
+
+| Middleware | What it protects against |
+|---|---|
+| **helmet** | Sets secure HTTP headers (`X-Content-Type-Options`, `Strict-Transport-Security`, a Content-Security-Policy…) to reduce XSS, clickjacking and sniffing attacks. |
+| **cors** | Browsers block a website from calling an API on another origin unless the API allows it. We allow **only** `CLIENT_URL` (your React app), with `credentials: true` for cookies. |
+| **express-rate-limit** | Limits requests per IP. `apiLimiter` = 100/min for the whole API. `authLimiter` = 10 per 15 min, to be attached to login/register routes so passwords can't be brute-forced. Over the limit gives HTTP **429** in our standard error JSON. |
+| **compression** | gzip-compresses responses, so they are smaller and faster. |
+| `x-powered-by` off | Doesn't advertise "Express" to attackers. |
+| `trust proxy` | When deployed behind a proxy, the limiter sees the real client IP, not the proxy's. |
+
+- **Rate limiting uses memory for now.** With several server instances it must share a counter, so in a later step we will switch it to a **Redis store**.
+- **CORS is a browser rule only.** Postman and curl ignore it, so it is not a replacement for authentication.
+- Rate limiting is skipped when `NODE_ENV=test`, so tests aren't throttled.
+- **Tested:** security headers present; request #100 onwards got 429; CORS answers only with `http://localhost:5173`, even for another origin like `evil.com`.
 
 ---
 
