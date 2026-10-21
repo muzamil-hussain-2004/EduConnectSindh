@@ -3,9 +3,11 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import { env } from './config/env';
+import swaggerUi from 'swagger-ui-express';
+import { env, isProduction } from './config/env';
 import { prisma } from './config/database';
 import { logger } from './config/logger';
+import { openApiSpec } from './config/swagger';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
 import { apiLimiter } from './middlewares/rateLimit.middleware';
 
@@ -22,6 +24,16 @@ export function createApp() {
   app.use(compression());
   app.use(apiLimiter);
   app.use(express.json({ limit: '1mb' }));
+
+  // Interactive API docs; hidden in production.
+  if (!isProduction) {
+    app.get('/api/docs.json', (_req, res) => res.json(openApiSpec));
+    app.use(
+      '/api/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(openApiSpec, { customSiteTitle: 'EduConnect API' }),
+    );
+  }
 
   app.get('/health', async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;

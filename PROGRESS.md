@@ -148,7 +148,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.10 Security middlewares (helmet, cors, rate-limit)
 - ✅ 0.11 Prisma setup + first migration + seed script
 - ✅ 0.12 Vitest + Supertest, first test (`/health`)
-- ⬜ 0.13 Swagger docs at `/api/docs`
+- ✅ 0.13 Swagger docs at `/api/docs`
 - ⬜ 0.14 GitHub Actions CI (lint + test + build)
 
 ### Phase 1 — Core modules (matches proposal weeks)
@@ -184,6 +184,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.10 | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`) |
 | 2026-10-21 | 0.11 | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
 | 2026-10-21 | 0.12 | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report |
+| 2026-10-21 | 0.13 | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total) |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -358,6 +359,18 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
 - **Commands:** `npm test` (run once), `npm run test:watch` (re-run on save), `npm run test:coverage` (shows which lines are tested; currently about 84%).
 - **Rule going forward:** every new endpoint gets tests (happy path plus the failure cases) before we tick it off.
 - Integration tests need Docker Postgres running (`npm run docker:up`).
+
+### Notes: step 0.13 explained (API documentation)
+
+- **What it is:** an **OpenAPI** spec is a standard JSON description of your API (URLs, inputs, outputs, errors). **Swagger UI** turns it into an interactive web page where anyone can read the docs and click **Try it out** to call an endpoint. The frontend developer, your supervisor and examiners all use it instead of guessing.
+- **Where:** http://localhost:5000/api/docs (the raw JSON is at `/api/docs.json`). It is **hidden in production**.
+- **[swagger.ts](backend/src/config/swagger.ts)** holds the spec: API info, the `/health` endpoint, and reusable pieces under `components`:
+  - `schemas.Error`: our standard error shape.
+  - `responses.BadRequest / Unauthorized / Forbidden / NotFound / InternalError`: reuse with `$ref` so we never repeat ourselves.
+  - `securitySchemes.bearerAuth`: the JWT "Authorize" button (used from step 1.1).
+- **Workflow from now on:** when you add an endpoint, add its entry under `paths` (or a per-module file merged into it) in the **same commit**. Docs and code stay in sync.
+- **Gotcha we checked:** helmet's strict Content-Security-Policy could break the Swagger page. It doesn't, because Swagger UI loads its scripts from our own origin. We confirmed in a real browser.
+- 2 tests ([docs.test.ts](backend/tests/integration/docs.test.ts)) check the spec and the UI page load.
 
 ---
 
