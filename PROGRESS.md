@@ -149,7 +149,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.11 Prisma setup + first migration + seed script
 - ✅ 0.12 Vitest + Supertest, first test (`/health`)
 - ✅ 0.13 Swagger docs at `/api/docs`
-- ⬜ 0.14 GitHub Actions CI (lint + test + build)
+- ✅ 0.14 GitHub Actions CI (lint + test + build)
 
 ### Phase 1 — Core modules (matches proposal weeks)
 - ⬜ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
@@ -185,6 +185,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.11 | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
 | 2026-10-21 | 0.12 | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report |
 | 2026-10-21 | 0.13 | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total) |
+| 2026-10-21 | 0.14 | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete** |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -371,6 +372,21 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
 - **Workflow from now on:** when you add an endpoint, add its entry under `paths` (or a per-module file merged into it) in the **same commit**. Docs and code stay in sync.
 - **Gotcha we checked:** helmet's strict Content-Security-Policy could break the Swagger page. It doesn't, because Swagger UI loads its scripts from our own origin. We confirmed in a real browser.
 - 2 tests ([docs.test.ts](backend/tests/integration/docs.test.ts)) check the spec and the UI page load.
+
+### Notes: step 0.14 explained (CI: Continuous Integration)
+
+- **What CI is:** a robot on GitHub that, on every `git push` and pull request, builds your project on a clean Linux machine and runs all the checks. If anything fails, you see a red ❌ right on the commit. "Works on my machine" stops being an excuse.
+- **[backend-ci.yml](.github/workflows/backend-ci.yml)** does, in order:
+  1. Starts temporary **Postgres** and **Redis** containers (`services:`).
+  2. `npm ci`: installs exactly what `package-lock.json` says (stricter and faster than `npm install`).
+  3. `prisma generate` and `prisma migrate deploy`: builds the DB tables, which also proves your migrations work from scratch.
+  4. `format:check`, `lint`, `typecheck`, `test`, `build`.
+- It only triggers when files in `backend/` change, and cancels older runs of the same branch.
+- CI uses throwaway passwords and secrets written in the workflow, never your real `.env`. Real secrets (later, for deployment) go in **GitHub → Settings → Secrets**, never in files.
+- All steps were verified to pass locally; the first real run happens when we push to GitHub.
+
+### Phase 0 is complete 🎉
+You now have: strict TypeScript, linting and formatting with commit hooks, Docker Postgres and Redis, validated config, logging, error handling, security middlewares, Prisma with migrations and seed, tests, API docs, and CI.
 
 ---
 
