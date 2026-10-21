@@ -24,6 +24,7 @@ export const requestsRepository = {
       select: {
         id: true,
         isPublished: true,
+        userId: true,
         teachingMode: true,
         user: { select: { status: true } },
         subjects: { select: { id: true } },

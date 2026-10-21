@@ -151,6 +151,22 @@ GET /tutors?...
 - **Invalidation:** when anything visible in search changes (profile saved, verification decision, account suspended, review added or hidden) we increment the **version number**. Old keys become unreachable and expire by themselves. No need to hunt down and delete keys.
 - **Fail-open:** if Redis is down the code skips the cache and answers from PostgreSQL. A cache must never take the site down.
 
+## 7b. Notifications flow (BullMQ + Socket.IO)
+
+```
+service (request/review/verification)
+   └─ notificationsService.notify(...)  ── adds a job ──►  Redis queue (BullMQ)
+                                                              │
+                                              Worker ◄────────┘  (retries 3x with backoff)
+                                                │
+                              ┌─────────────────┴──────────────────┐
+                              ▼                                    ▼
+                  INSERT notifications (PostgreSQL)      Socket.IO emit to room user:<id>
+                  (history, works offline)               (instant, only if online)
+```
+
+The HTTP request returns right after the job is queued; delivery happens in the background. See [DEPENDENCIES.md](./DEPENDENCIES.md) for BullMQ and Socket.IO explained from scratch.
+
 ## 8. Security checklist (good viva material)
 
 - Input validated with Zod everywhere; fields whitelisted (no mass assignment: a user can't set their own `role` or `verificationStatus`).

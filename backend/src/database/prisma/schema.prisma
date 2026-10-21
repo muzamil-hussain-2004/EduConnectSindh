@@ -49,6 +49,7 @@ model User {
   tutorProfile  TutorProfile?
   shortlist     ShortlistItem[]
   reviews       Review[]
+  notifications Notification[]
   requests      TutorRequest[]
 
   @@index([role])
@@ -114,6 +115,31 @@ model TutorProfile {
 enum ReviewStatus {
   VISIBLE
   HIDDEN
+}
+
+enum NotificationType {
+  REQUEST_RECEIVED
+  REQUEST_ACCEPTED
+  REQUEST_DECLINED
+  REVIEW_RECEIVED
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+}
+
+// Saved so users see alerts they missed while offline; Socket.IO only delivers the live ones.
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
 }
 
 // One review per author per tutor. Only people with an ACCEPTED request may write one.

@@ -24,13 +24,13 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 | Tutor search and filters (cached in Redis)                                  | ✅ Done    |
 | Requests, shortlist, matching and recommendations                           | ✅ Done    |
 | Reviews and ratings with moderation                                         | ✅ Done    |
-| Notifications (real-time with Socket.IO)                                    | 🔜 Planned |
+| Notifications (real-time with Socket.IO)                                    | ✅ Done    |
 | Courses, lessons, enrollment, progress                                      | 🔜 Planned |
 | Virtual class scheduling                                                    | 🔜 Planned |
 | AI learning assistant                                                       | 🔜 Planned |
 | Admin dashboard APIs                                                        | 🔜 Planned |
 
-Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.md)**. How the code and data flow: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
+Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.md)**. How the code and data flow: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**, and every package explained in **[docs/DEPENDENCIES.md](./docs/DEPENDENCIES.md)**.
 
 ## Tech stack
 
@@ -39,7 +39,7 @@ Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.m
 | Runtime and language | Node.js 20+, TypeScript (strict)                                          |
 | API                  | Express 5, REST, OpenAPI/Swagger                                          |
 | Database             | PostgreSQL 16 with Prisma ORM                                             |
-| Cache, queues        | Redis 7 (BullMQ planned)                                                  |
+| Cache, queues, realtime | Redis 7, BullMQ (jobs), Socket.IO (live push)                          |
 | Auth                 | JWT access tokens, rotating refresh tokens, argon2 password hashing, RBAC |
 | Validation           | Zod                                                                       |
 | Security             | helmet, CORS, rate limiting                                               |
@@ -171,6 +171,12 @@ Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 | GET    | `/reviews`                           | Moderation queue                                        | Admin         |
 | POST   | `/reviews/:id/hide`                  | Hide a review                                           | Admin         |
 | POST   | `/reviews/:id/unhide`                | Restore a review                                        | Admin         |
+| GET    | `/notifications`                     | My notifications (`unreadOnly`, pagination)             | Any user      |
+| GET    | `/notifications/unread-count`        | Unread count for the bell badge                         | Any user      |
+| POST   | `/notifications/:id/read`            | Mark one as read                                        | Any user      |
+| POST   | `/notifications/read-all`            | Mark all as read                                        | Any user      |
+
+Live events: connect to Socket.IO on the same port with `auth: { token: <accessToken> }` and listen for the `notification` event.
 | GET    | `/catalog/cities`                    | Cities with their areas                                 | Public        |
 | GET    | `/catalog/subjects`                  | All subjects                                            | Public        |
 | GET    | `/verification/me`                   | My verification status and documents                    | Tutor         |

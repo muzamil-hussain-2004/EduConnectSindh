@@ -1,6 +1,7 @@
 import type { Role } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
 import { searchCache } from '../search/search.cache';
+import { notificationsService } from '../notifications/notifications.service';
 import { detectFileType } from '../../shared/utils/fileType';
 import { documentStorage } from './document.storage';
 import { verificationRepository } from './verification.repository';
@@ -183,6 +184,16 @@ export const verificationService = {
       throw AppError.conflict('This request is not pending review');
     }
     await searchCache.invalidate();
+    const approved = to === 'VERIFIED';
+    await notificationsService.notify({
+      userId: profile.userId,
+      type: approved ? 'VERIFICATION_APPROVED' : 'VERIFICATION_REJECTED',
+      title: approved ? 'You are verified' : 'Verification rejected',
+      body: approved
+        ? 'Your documents were approved. Your profile now shows the verified badge.'
+        : `Your documents were rejected${note ? `: ${note}` : '.'} Please fix and resubmit.`,
+      data: { tutorId },
+    });
     return this.getRequest(tutorId);
   },
 };

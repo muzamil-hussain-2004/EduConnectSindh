@@ -161,7 +161,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.5 Search & filters (+ Redis cache)
 - ✅ 1.6 Requests, shortlist, matching/recommendations
 - ✅ 1.7 Reviews & ratings (+ moderation)
-- ⬜ 1.8 Notifications (BullMQ + Socket.IO)
+- ✅ 1.8 Notifications (BullMQ + Socket.IO)
 
 ### Phase 2 — Learning platform
 
@@ -198,6 +198,22 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                             |
 | 2026-10-21 | 1.6      | Requests (send, accept, decline, cancel), shortlist, scored recommendations; contact shared only after accept; 117 tests |
 | 2026-10-21 | 1.7      | Reviews: accepted-request-only, one per author, admin hide/unhide, cached ratingAvg/ratingCount, search `minRating` + `sort=rating`; 124 tests; added `docs/ARCHITECTURE.md` |
+| 2026-10-21 | 1.8      | Notifications: BullMQ queue + worker, Socket.IO live push (JWT-authenticated rooms), saved in DB, 4 REST endpoints, triggers on requests/reviews/verification; 131 tests; added `docs/DEPENDENCIES.md` |
+
+### Notes: step 1.8 (Notifications, BullMQ, Socket.IO) explained
+
+- **Full beginner explanation:** [docs/DEPENDENCIES.md](./docs/DEPENDENCIES.md) (what BullMQ and Socket.IO are, with diagrams) and section 7b of [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+- **Flow:** a service calls `notify()` → job added to the Redis queue → worker saves a `notifications` row in PostgreSQL → worker emits a `notification` event to the room `user:<id>`.
+- **Why both a database row and a socket event?** Sockets only reach people who are online. The row is the permanent copy (the bell list); the socket is a live bonus.
+- **Why a queue at all?** The request returns immediately; delivery happens in the background with 3 retries and exponential backoff, and jobs survive an API restart because they live in Redis.
+- **Never breaks the main action:** `notify()` catches every error. If the queue (Redis) is down it delivers inline, so the notification is not lost.
+- **Socket security:** the browser connects with `auth: { token: accessToken }`; middleware verifies the JWT, otherwise `connect_error: Unauthorized`. Each user joins a private room, so events reach only their own tabs and devices.
+- **Triggers:** request received (to tutor), accepted or declined (to student), first review (to tutor; edits do not notify again), verification approved or rejected (to tutor).
+- **Endpoints:** `GET /notifications` (+ `unreadOnly`), `GET /notifications/unread-count`, `POST /notifications/:id/read`, `POST /notifications/read-all`. Other people's notifications answer 404.
+- **Tests:** a real Socket.IO client and a real worker run in the test; queue keys use a separate `bull-test` prefix so tests never touch development jobs. `tests/setup.ts` closes the queue connection after each test file.
+- **Shutdown:** the server closes sockets, waits for the running worker jobs, then closes Redis and the database.
+- **Limit:** if both the queue and the database fail at once the notification is lost (logged). A transactional outbox would fix that but is overkill here.
+- **Flaky note:** one full-suite run failed once under load and passed in four later runs. If it appears again, check timing-based waits in `notifications.test.ts`.
 
 ### Notes: step 1.7 (Reviews and ratings) explained
 

@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { notificationsService } from '../notifications/notifications.service';
 import { searchCache } from '../search/search.cache';
 import { reviewsRepository } from './reviews.repository';
 import type { AdminListQuery, ListReviewsQuery, ReviewInput } from './reviews.schema';
@@ -45,12 +46,23 @@ export const reviewsService = {
   },
 
   async saveMine(authorId: string, tutorId: string, input: ReviewInput) {
-    await requirePublicTutor(tutorId);
+    const tutor = await requirePublicTutor(tutorId);
     if (!(await reviewsRepository.hasAcceptedRequest(authorId, tutorId))) {
       throw AppError.forbidden('You can review a tutor only after they accepted your request');
     }
+    const isNew = !(await reviewsRepository.findMine(authorId, tutorId));
     const review = await reviewsRepository.upsert(authorId, tutorId, input);
     await searchCache.invalidate();
+    // Edits do not notify again, only the first review does.
+    if (isNew) {
+      await notificationsService.notify({
+        userId: tutor.userId,
+        type: 'REVIEW_RECEIVED',
+        title: 'New review',
+        body: `${review.author.fullName} rated you ${input.rating}/5.`,
+        data: { reviewId: review.id },
+      });
+    }
     return toPublic(review);
   },
 

@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { notificationsService } from '../notifications/notifications.service';
 import type { RequestWithRelations } from './requests.repository';
 import { requestsRepository } from './requests.repository';
 import type { CreateRequestInput, ListRequestsQuery } from './requests.schema';
@@ -70,7 +71,15 @@ export const requestsService = {
       );
     }
 
-    return toRequestDto(await requestsRepository.create(studentId, details, tutorId), 'student');
+    const created = await requestsRepository.create(studentId, details, tutorId);
+    await notificationsService.notify({
+      userId: tutor.userId,
+      type: 'REQUEST_RECEIVED',
+      title: 'New tutoring request',
+      body: `${created.student.fullName} asked for ${created.subject.name} lessons (${details.mode.toLowerCase()}).`,
+      data: { requestId: created.id },
+    });
+    return toRequestDto(created, 'student');
   },
 
   async listMine(studentId: string, query: ListRequestsQuery) {
@@ -98,7 +107,18 @@ export const requestsService = {
     if ((await requestsRepository.transition(id, decision, note ?? null)) === 0) {
       throw AppError.conflict('This request is no longer pending');
     }
-    return toRequestDto((await requestsRepository.findById(id)) as RequestWithRelations, 'tutor');
+    const updated = (await requestsRepository.findById(id)) as RequestWithRelations;
+    const accepted = decision === 'ACCEPTED';
+    await notificationsService.notify({
+      userId: request.studentId,
+      type: accepted ? 'REQUEST_ACCEPTED' : 'REQUEST_DECLINED',
+      title: accepted ? 'Request accepted' : 'Request declined',
+      body: accepted
+        ? `${updated.tutorProfile.user.fullName} accepted your ${updated.subject.name} request. You can now see their contact details.`
+        : `${updated.tutorProfile.user.fullName} declined your ${updated.subject.name} request.`,
+      data: { requestId: id },
+    });
+    return toRequestDto(updated, 'tutor');
   },
 
   async cancel(studentId: string, id: string) {

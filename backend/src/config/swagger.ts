@@ -5,6 +5,7 @@ import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
 import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
 import { requestsPaths, requestsSchemas } from '../modules/requests/requests.docs';
 import { reviewsPaths, reviewsSchemas } from '../modules/reviews/reviews.docs';
+import { notificationsPaths } from '../modules/notifications/notifications.docs';
 import { env } from './env';
 
 // Each module will export its own `paths` and we merge them here as we build them.
@@ -29,6 +30,7 @@ export const openApiSpec = {
     { name: 'Shortlist', description: 'Saved tutors' },
     { name: 'Recommendations', description: 'Scored tutor matches' },
     { name: 'Reviews', description: 'Ratings, comments and admin moderation' },
+    { name: 'Notifications', description: 'In-app notifications (saved + live via Socket.IO)' },
   ],
   paths: {
     ...authPaths,
@@ -38,6 +40,7 @@ export const openApiSpec = {
     ...verificationPaths,
     ...requestsPaths,
     ...reviewsPaths,
+    ...notificationsPaths,
     '/health': {
       get: {
         tags: ['System'],

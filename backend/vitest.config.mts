@@ -6,6 +6,7 @@ export default defineConfig({
     // Test files share one database and one Redis, and the cache tests read a global counter.
     fileParallelism: false,
     include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
+    setupFiles: ['tests/setup.ts'],
     // Defaults let tests run on a fresh clone / CI without a .env file.
     env: {
       NODE_ENV: 'test',
