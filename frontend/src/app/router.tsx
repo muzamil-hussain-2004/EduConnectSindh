@@ -7,6 +7,9 @@ import { AdminVerificationPage } from '@/pages/dashboard/AdminVerificationPage';
 import { CourseEditorPage } from '@/pages/dashboard/CourseEditorPage';
 import { MyCoursesPage } from '@/pages/dashboard/MyCoursesPage';
 import { MyLearningPage } from '@/pages/dashboard/MyLearningPage';
+import { MyClassesPage } from '@/pages/dashboard/MyClassesPage';
+import { TutorClassesPage } from '@/pages/dashboard/TutorClassesPage';
+import { ClassesPage } from '@/pages/ClassesPage';
 import { CourseDetailPage } from '@/pages/CourseDetailPage';
 import { CoursesPage } from '@/pages/CoursesPage';
 import { LessonPage } from '@/pages/LessonPage';
@@ -38,6 +41,7 @@ export const routes = [
       { path: '/tutors', element: <TutorsPage /> },
       { path: '/tutors/:id', element: <TutorDetailPage /> },
       { path: '/courses', element: <CoursesPage /> },
+      { path: '/classes', element: <ClassesPage /> },
       { path: '/courses/:id', element: <CourseDetailPage /> },
       {
         element: <ProtectedRoute />,
@@ -58,12 +62,14 @@ export const routes = [
                   { path: 'requests', element: <MyRequestsPage /> },
                   { path: 'shortlist', element: <ShortlistPage /> },
                   { path: 'learning', element: <MyLearningPage /> },
+                  { path: 'classes', element: <MyClassesPage /> },
                 ],
               },
               {
                 element: <ProtectedRoute roles={['TUTOR']} />,
                 children: [
                   { path: 'courses', element: <MyCoursesPage /> },
+                  { path: 'live', element: <TutorClassesPage /> },
                   { path: 'courses/new', element: <CourseEditorPage /> },
                   { path: 'courses/:id', element: <CourseEditorPage /> },
                   { path: 'incoming', element: <IncomingRequestsPage /> },

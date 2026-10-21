@@ -52,6 +52,7 @@ model User {
   notifications Notification[]
   requests      TutorRequest[]
   enrollments   Enrollment[]
+  classBookings ClassBooking[]
 
   @@index([role])
   @@map("users")
@@ -100,6 +101,7 @@ model TutorProfile {
   requests           TutorRequest[]
   reviews            Review[]
   courses            Course[]
+  classes            ClassSession[]
   // Denormalized from visible reviews so search can sort/filter without joins.
   ratingAvg          Float                  @default(0)
   ratingCount        Int                    @default(0)
@@ -125,6 +127,8 @@ enum NotificationType {
   REQUEST_DECLINED
   REVIEW_RECEIVED
   COURSE_ENROLLED
+  CLASS_SCHEDULED
+  CLASS_CANCELLED
   VERIFICATION_APPROVED
   VERIFICATION_REJECTED
 }
@@ -222,20 +226,21 @@ enum CourseStatus {
 
 // A structured course made by a tutor: ordered lessons students can enroll in and track.
 model Course {
-  id             String       @id @default(uuid())
+  id             String         @id @default(uuid())
   tutorProfileId String
-  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  tutorProfile   TutorProfile   @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
   subjectId      String
-  subject        Subject      @relation(fields: [subjectId], references: [id])
+  subject        Subject        @relation(fields: [subjectId], references: [id])
   title          String
   description    String
-  level          CourseLevel  @default(BEGINNER)
-  price          Int          @default(0) // PKR, 0 = free. Online payment is out of scope for now.
-  status         CourseStatus @default(DRAFT)
+  level          CourseLevel    @default(BEGINNER)
+  price          Int            @default(0) // PKR, 0 = free. Online payment is out of scope for now.
+  status         CourseStatus   @default(DRAFT)
   lessons        Lesson[]
   enrollments    Enrollment[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  classes        ClassSession[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([status, subjectId])
   @@index([tutorProfileId])
@@ -291,6 +296,48 @@ enum RequestStatus {
   ACCEPTED
   DECLINED
   CANCELLED
+}
+
+enum ClassStatus {
+  SCHEDULED
+  CANCELLED
+}
+
+// A live online class a tutor schedules (optionally tied to one of their courses).
+// The meeting link is private: only the tutor and booked students can read it.
+model ClassSession {
+  id             String         @id @default(uuid())
+  tutorProfileId String
+  tutorProfile   TutorProfile   @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  courseId       String?
+  course         Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  title          String
+  description    String         @default("")
+  startsAt       DateTime
+  durationMin    Int            @default(60)
+  meetingUrl     String
+  capacity       Int            @default(30)
+  status         ClassStatus    @default(SCHEDULED)
+  bookings       ClassBooking[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status, startsAt])
+  @@index([tutorProfileId, startsAt])
+  @@map("class_sessions")
+}
+
+model ClassBooking {
+  id        String       @id @default(uuid())
+  sessionId String
+  session   ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@map("class_bookings")
 }
 
 // A student's saved tutors. One row per (student, tutor).

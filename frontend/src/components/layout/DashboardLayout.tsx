@@ -2,6 +2,7 @@ import {
   Bell,
   BookMarked,
   BookOpen,
+  CalendarClock,
   GraduationCap,
   FileCheck2,
   Heart,
@@ -34,6 +35,7 @@ const NAV: Record<Role, Item[]> = {
   STUDENT: [
     ...COMMON,
     { to: '/dashboard/learning', label: 'My learning', icon: GraduationCap },
+    { to: '/dashboard/classes', label: 'My classes', icon: CalendarClock },
     { to: '/dashboard/requests', label: 'My requests', icon: BookMarked },
     { to: '/dashboard/shortlist', label: 'Shortlist', icon: Heart },
     NOTIFS,
@@ -41,6 +43,7 @@ const NAV: Record<Role, Item[]> = {
   PARENT: [
     ...COMMON,
     { to: '/dashboard/learning', label: 'My learning', icon: GraduationCap },
+    { to: '/dashboard/classes', label: 'My classes', icon: CalendarClock },
     { to: '/dashboard/requests', label: 'My requests', icon: BookMarked },
     { to: '/dashboard/shortlist', label: 'Shortlist', icon: Heart },
     NOTIFS,
@@ -48,6 +51,7 @@ const NAV: Record<Role, Item[]> = {
   TUTOR: [
     ...COMMON,
     { to: '/dashboard/courses', label: 'My courses', icon: BookOpen },
+    { to: '/dashboard/live', label: 'Live classes', icon: CalendarClock },
     { to: '/dashboard/incoming', label: 'Requests', icon: Inbox },
     { to: '/dashboard/profile', label: 'My profile', icon: UserCog },
     { to: '/dashboard/verification', label: 'Verification', icon: FileCheck2 },
