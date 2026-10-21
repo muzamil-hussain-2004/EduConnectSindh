@@ -24,6 +24,7 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 | Tutor search and filters (cached in Redis)                                  | ✅ Done    |
 | Requests, shortlist, matching and recommendations                           | ✅ Done    |
 | Reviews and ratings with moderation                                         | ✅ Done    |
+| Courses, lessons, enrollment and progress (backend)                         | ✅ Done    |
 | Notifications (real-time with Socket.IO)                                    | ✅ Done    |
 | Courses, lessons, enrollment, progress                                      | 🔜 Planned |
 | Virtual class scheduling                                                    | 🔜 Planned |
@@ -154,40 +155,52 @@ Other scripts: `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
 
 Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 
-| Method | Path                          | Description                                             | Auth           |
-| ------ | ----------------------------- | ------------------------------------------------------- | -------------- |
-| POST   | `/auth/register`              | Create a student, parent or tutor account               | Public         |
-| POST   | `/auth/login`                 | Log in, receive an access token and refresh cookie      | Public         |
-| POST   | `/auth/refresh`               | Rotate the refresh token, get a new access token        | Cookie         |
-| POST   | `/auth/logout`                | Revoke the refresh token                                | Cookie         |
-| PATCH  | `/users/me`                   | Update my name / phone                                  | Bearer token   |
-| POST   | `/users/me/password`          | Change password (logs out all devices)                  | Bearer token   |
-| GET    | `/users`                      | List users (pagination, role/status/search filters)     | Admin          |
-| PATCH  | `/users/:id/status`           | Suspend or reactivate a user                            | Admin          |
-| GET    | `/tutors/me`                  | My tutor profile                                        | Tutor          |
-| PUT    | `/tutors/me`                  | Create or replace my tutor profile                      | Tutor          |
-| GET    | `/tutors`                     | Search tutors (filters, sort, pagination, Redis cached) | Public         |
-| GET    | `/tutors/recommended`         | Best-matching tutors with score and reasons             | Public         |
-| GET    | `/tutors/:id`                 | Public tutor profile (published only)                   | Public         |
-| POST   | `/requests`                   | Send a tutoring request                                 | Student/Parent |
-| GET    | `/requests/mine`              | My sent requests                                        | Student/Parent |
-| GET    | `/requests/incoming`          | Requests I received                                     | Tutor          |
-| POST   | `/requests/:id/accept`        | Accept a pending request (shares contact)               | Tutor          |
-| POST   | `/requests/:id/decline`       | Decline a pending request                               | Tutor          |
-| POST   | `/requests/:id/cancel`        | Cancel my pending request                               | Student/Parent |
-| GET    | `/shortlist`                  | My saved tutors                                         | Student/Parent |
-| PUT    | `/shortlist/:id`              | Save a tutor (idempotent)                               | Student/Parent |
-| DELETE | `/shortlist/:id`              | Remove a saved tutor                                    | Student/Parent |
-| GET    | `/tutors/:id/reviews`         | Visible reviews of a tutor                              | Public         |
-| PUT    | `/tutors/:id/reviews`         | Create or edit my review (needs accepted request)       | Student/Parent |
-| DELETE | `/tutors/:id/reviews`         | Delete my review                                        | Student/Parent |
-| GET    | `/reviews`                    | Moderation queue                                        | Admin          |
-| POST   | `/reviews/:id/hide`           | Hide a review                                           | Admin          |
-| POST   | `/reviews/:id/unhide`         | Restore a review                                        | Admin          |
-| GET    | `/notifications`              | My notifications (`unreadOnly`, pagination)             | Any user       |
-| GET    | `/notifications/unread-count` | Unread count for the bell badge                         | Any user       |
-| POST   | `/notifications/:id/read`     | Mark one as read                                        | Any user       |
-| POST   | `/notifications/read-all`     | Mark all as read                                        | Any user       |
+| Method | Path                                 | Description                                             | Auth           |
+| ------ | ------------------------------------ | ------------------------------------------------------- | -------------- |
+| POST   | `/auth/register`                     | Create a student, parent or tutor account               | Public         |
+| POST   | `/auth/login`                        | Log in, receive an access token and refresh cookie      | Public         |
+| POST   | `/auth/refresh`                      | Rotate the refresh token, get a new access token        | Cookie         |
+| POST   | `/auth/logout`                       | Revoke the refresh token                                | Cookie         |
+| PATCH  | `/users/me`                          | Update my name / phone                                  | Bearer token   |
+| POST   | `/users/me/password`                 | Change password (logs out all devices)                  | Bearer token   |
+| GET    | `/users`                             | List users (pagination, role/status/search filters)     | Admin          |
+| PATCH  | `/users/:id/status`                  | Suspend or reactivate a user                            | Admin          |
+| GET    | `/tutors/me`                         | My tutor profile                                        | Tutor          |
+| PUT    | `/tutors/me`                         | Create or replace my tutor profile                      | Tutor          |
+| GET    | `/tutors`                            | Search tutors (filters, sort, pagination, Redis cached) | Public         |
+| GET    | `/tutors/recommended`                | Best-matching tutors with score and reasons             | Public         |
+| GET    | `/tutors/:id`                        | Public tutor profile (published only)                   | Public         |
+| POST   | `/requests`                          | Send a tutoring request                                 | Student/Parent |
+| GET    | `/requests/mine`                     | My sent requests                                        | Student/Parent |
+| GET    | `/requests/incoming`                 | Requests I received                                     | Tutor          |
+| POST   | `/requests/:id/accept`               | Accept a pending request (shares contact)               | Tutor          |
+| POST   | `/requests/:id/decline`              | Decline a pending request                               | Tutor          |
+| POST   | `/requests/:id/cancel`               | Cancel my pending request                               | Student/Parent |
+| GET    | `/shortlist`                         | My saved tutors                                         | Student/Parent |
+| PUT    | `/shortlist/:id`                     | Save a tutor (idempotent)                               | Student/Parent |
+| DELETE | `/shortlist/:id`                     | Remove a saved tutor                                    | Student/Parent |
+| GET    | `/tutors/:id/reviews`                | Visible reviews of a tutor                              | Public         |
+| PUT    | `/tutors/:id/reviews`                | Create or edit my review (needs accepted request)       | Student/Parent |
+| DELETE | `/tutors/:id/reviews`                | Delete my review                                        | Student/Parent |
+| GET    | `/reviews`                           | Moderation queue                                        | Admin          |
+| POST   | `/reviews/:id/hide`                  | Hide a review                                           | Admin          |
+| POST   | `/reviews/:id/unhide`                | Restore a review                                        | Admin          |
+| GET    | `/notifications`                     | My notifications (`unreadOnly`, pagination)             | Any user       |
+| GET    | `/notifications/unread-count`        | Unread count for the bell badge                         | Any user       |
+| POST   | `/notifications/:id/read`            | Mark one as read                                        | Any user       |
+| POST   | `/notifications/read-all`            | Mark all as read                                        | Any user       |
+| GET    | `/courses`                           | Browse published courses (filters, sort, paging)        | Public         |
+| GET    | `/courses/:id`                       | Course outline (no lesson content)                      | Public         |
+| POST   | `/courses`                           | Create a draft course                                   | Tutor          |
+| GET    | `/courses/mine`                      | My courses incl. drafts                                 | Tutor          |
+| PATCH  | `/courses/:id`                       | Edit my course                                          | Tutor (owner)  |
+| DELETE | `/courses/:id`                       | Delete (409 if students enrolled)                       | Tutor (owner)  |
+| POST   | `/courses/:id/publish`               | Publish (needs ≥ 1 lesson); `/unpublish` reverses       | Tutor (owner)  |
+| POST   | `/courses/:id/lessons`               | Add lesson; `PATCH`/`DELETE /:lessonId` edit or remove  | Tutor (owner)  |
+| POST   | `/courses/:id/enroll`                | Enroll; `DELETE` leaves; `GET /enrollment` for progress | Student/Parent |
+| GET    | `/courses/:id/lessons/:lid`          | Read lesson (owner, enrolled, admin)                    | Signed in      |
+| POST   | `/courses/:id/lessons/:lid/complete` | Mark lesson done; `DELETE` unmarks                      | Student/Parent |
+| GET    | `/enrollments/mine`                  | My learning with progress %                             | Student/Parent |
 
 Live events: connect to Socket.IO on the same port with `auth: { token: <accessToken> }` and listen for the `notification` event.
 | GET | `/catalog/cities` | Cities with their areas | Public |

@@ -4,6 +4,7 @@ import { searchPaths, searchSchemas } from '../modules/search/search.docs';
 import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
 import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
 import { requestsPaths, requestsSchemas } from '../modules/requests/requests.docs';
+import { coursesPaths, coursesSchemas } from '../modules/courses/courses.docs';
 import { reviewsPaths, reviewsSchemas } from '../modules/reviews/reviews.docs';
 import { notificationsPaths } from '../modules/notifications/notifications.docs';
 import { env } from './env';
@@ -30,6 +31,7 @@ export const openApiSpec = {
     { name: 'Shortlist', description: 'Saved tutors' },
     { name: 'Recommendations', description: 'Scored tutor matches' },
     { name: 'Reviews', description: 'Ratings, comments and admin moderation' },
+    { name: 'Courses', description: 'Courses, lessons, enrollment and progress' },
     { name: 'Notifications', description: 'In-app notifications (saved + live via Socket.IO)' },
   ],
   paths: {
@@ -40,6 +42,7 @@ export const openApiSpec = {
     ...verificationPaths,
     ...requestsPaths,
     ...reviewsPaths,
+    ...coursesPaths,
     ...notificationsPaths,
     '/health': {
       get: {
@@ -78,6 +81,7 @@ export const openApiSpec = {
       ...verificationSchemas,
       ...requestsSchemas,
       ...reviewsSchemas,
+      ...coursesSchemas,
       Health: {
         type: 'object',
         properties: {

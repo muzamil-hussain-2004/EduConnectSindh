@@ -51,6 +51,7 @@ model User {
   reviews       Review[]
   notifications Notification[]
   requests      TutorRequest[]
+  enrollments   Enrollment[]
 
   @@index([role])
   @@map("users")
@@ -98,6 +99,7 @@ model TutorProfile {
   shortlistedBy      ShortlistItem[]
   requests           TutorRequest[]
   reviews            Review[]
+  courses            Course[]
   // Denormalized from visible reviews so search can sort/filter without joins.
   ratingAvg          Float                  @default(0)
   ratingCount        Int                    @default(0)
@@ -122,6 +124,7 @@ enum NotificationType {
   REQUEST_ACCEPTED
   REQUEST_DECLINED
   REVIEW_RECEIVED
+  COURSE_ENROLLED
   VERIFICATION_APPROVED
   VERIFICATION_REJECTED
 }
@@ -201,8 +204,86 @@ model Subject {
   name     String         @unique
   tutors   TutorProfile[]
   requests TutorRequest[]
+  courses  Course[]
 
   @@map("subjects")
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// A structured course made by a tutor: ordered lessons students can enroll in and track.
+model Course {
+  id             String       @id @default(uuid())
+  tutorProfileId String
+  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+  title          String
+  description    String
+  level          CourseLevel  @default(BEGINNER)
+  price          Int          @default(0) // PKR, 0 = free. Online payment is out of scope for now.
+  status         CourseStatus @default(DRAFT)
+  lessons        Lesson[]
+  enrollments    Enrollment[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([status, subjectId])
+  @@index([tutorProfileId])
+  @@map("courses")
+}
+
+model Lesson {
+  id          String           @id @default(uuid())
+  courseId    String
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  content     String // lesson text; only enrolled students and the owner can read it
+  videoUrl    String?
+  durationMin Int              @default(10)
+  position    Int
+  progress    LessonProgress[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([courseId, position])
+  @@map("lessons")
+}
+
+model Enrollment {
+  id        String           @id @default(uuid())
+  courseId  String
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  progress  LessonProgress[]
+  createdAt DateTime         @default(now())
+
+  @@unique([courseId, studentId])
+  @@index([studentId])
+  @@map("enrollments")
+}
+
+// One row per completed lesson; progress % = completed rows / lessons in the course.
+model LessonProgress {
+  id           String     @id @default(uuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt  DateTime   @default(now())
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
 }
 
 enum RequestStatus {

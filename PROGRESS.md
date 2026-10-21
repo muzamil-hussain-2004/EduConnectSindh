@@ -174,7 +174,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Phase 2 — Learning platform
 
-- ⬜ 2.1 Courses, lessons, enrollment, progress
+- ✅ 2.1 Courses, lessons, enrollment, progress (backend; frontend pages pending)
 - ⬜ 2.2 Virtual class scheduling
 - ⬜ 2.3 AI learning assistant
 - ⬜ 2.4 Admin dashboard APIs
@@ -210,6 +210,17 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.8      | Notifications: BullMQ queue + worker, Socket.IO live push (JWT-authenticated rooms), saved in DB, 4 REST endpoints, triggers on requests/reviews/verification; 131 tests; added `docs/DEPENDENCIES.md`                                                                                                                                  |
 | 2026-10-21 | F1       | Frontend foundation: Vite + React 19 + TS strict, Tailwind 4, Redux Toolkit + RTK Query, React Router, RHF + Zod; auth (login/register/logout, session restore, single-flight refresh, route guards); 8 tests; `frontend-ci.yml`; added `docs/FRONTEND.md`                                                                              |
 | 2026-10-22 | F2–F6    | Frontend pages in the E-Tutor design (orange `#FF6636`, Inter): home, browse with URL-param filters (sidebar on desktop, sheet on mobile), tutor detail + request modal + reviews, role-aware dashboard (seeker, tutor, admin), live notifications over Socket.IO; backend DTO now returns `ratingAvg`/`ratingCount`; 11 frontend tests |
+| 2026-10-22 | 2.1      | Courses backend: courses, lessons, enrollments, lesson progress (4 tables), tutor authoring + publish rule, public catalogue with filters/sort/paging, enroll/unenroll, lesson access control, progress %, `COURSE_ENROLLED` notification; 137 backend tests                                                                            |
+
+### Notes: step 2.1 (Courses, lessons, enrollment, progress) explained
+
+- **Data model:** `Course` belongs to a `TutorProfile`; it has ordered `Lesson`s. `Enrollment` links a student to a course (unique pair). `LessonProgress` links an enrollment to each completed lesson (unique pair, so marking twice is harmless). Deleting a parent cascades to children.
+- **Flow (tutor):** create course (DRAFT) → add lessons → publish (needs ≥ 1 lesson) → students can see it. Unpublish returns it to DRAFT. Deleting is refused (409) once students are enrolled, so their progress is never lost.
+- **Flow (student):** browse `GET /courses` → enroll → read lessons → mark complete. Progress is computed on read: `completed / total lessons × 100`, so it is never stale when lessons change.
+- **Access control:** the public course endpoint returns only an outline (no lesson text). Lesson content is returned only to the owner, an enrolled student or an admin (403 otherwise). Ownership: missing course = 404, someone else's = 403.
+- **Safety:** video URLs must be `https` (blocks `javascript:` links); enrolling twice is a 409, even under a double-click race (unique index).
+- **Out of scope:** payments. `price` is informational; enrolling is instant.
+- **Endpoints:** see Swagger at `/api/docs` (tag _Courses_).
 
 ### Notes: steps F2–F6 (pages, dashboards, filters, responsive) explained
 
