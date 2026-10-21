@@ -22,7 +22,7 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 | Tutor profiles, subjects and areas                                          | ✅ Done    |
 | Admin-controlled tutor verification (documents stay private)                | ✅ Done    |
 | Tutor search and filters (cached in Redis)                                  | ✅ Done    |
-| Requests, shortlist, matching and recommendations                           | 🔜 Planned |
+| Requests, shortlist, matching and recommendations                           | ✅ Done    |
 | Reviews and ratings with moderation                                         | 🔜 Planned |
 | Notifications (real-time with Socket.IO)                                    | 🔜 Planned |
 | Courses, lessons, enrollment, progress                                      | 🔜 Planned |
@@ -154,7 +154,17 @@ Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 | GET    | `/tutors/me`                         | My tutor profile                                        | Tutor         |
 | PUT    | `/tutors/me`                         | Create or replace my tutor profile                      | Tutor         |
 | GET    | `/tutors`                            | Search tutors (filters, sort, pagination, Redis cached) | Public        |
+| GET    | `/tutors/recommended`                | Best-matching tutors with score and reasons             | Public        |
 | GET    | `/tutors/:id`                        | Public tutor profile (published only)                   | Public        |
+| POST   | `/requests`                          | Send a tutoring request                                 | Student/Parent |
+| GET    | `/requests/mine`                     | My sent requests                                        | Student/Parent |
+| GET    | `/requests/incoming`                 | Requests I received                                     | Tutor         |
+| POST   | `/requests/:id/accept`               | Accept a pending request (shares contact)               | Tutor         |
+| POST   | `/requests/:id/decline`              | Decline a pending request                               | Tutor         |
+| POST   | `/requests/:id/cancel`               | Cancel my pending request                               | Student/Parent |
+| GET    | `/shortlist`                         | My saved tutors                                         | Student/Parent |
+| PUT    | `/shortlist/:id`                     | Save a tutor (idempotent)                               | Student/Parent |
+| DELETE | `/shortlist/:id`                     | Remove a saved tutor                                    | Student/Parent |
 | GET    | `/catalog/cities`                    | Cities with their areas                                 | Public        |
 | GET    | `/catalog/subjects`                  | All subjects                                            | Public        |
 | GET    | `/verification/me`                   | My verification status and documents                    | Tutor         |

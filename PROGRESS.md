@@ -159,7 +159,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.3 Tutor profile (+ locations/areas)
 - ✅ 1.4 Verification (upload docs, admin approve/reject)
 - ✅ 1.5 Search & filters (+ Redis cache)
-- ⬜ 1.6 Requests, shortlist, matching/recommendations
+- ✅ 1.6 Requests, shortlist, matching/recommendations
 - ⬜ 1.7 Reviews & ratings (+ moderation)
 - ⬜ 1.8 Notifications (BullMQ + Socket.IO)
 
@@ -196,6 +196,20 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests |
 | 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                          |
 | 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                             |
+| 2026-10-21 | 1.6      | Requests (send, accept, decline, cancel), shortlist, scored recommendations; contact shared only after accept; 117 tests |
+
+### Notes: step 1.6 (Requests, shortlist, recommendations) explained
+
+- **Request lifecycle:** `PENDING → ACCEPTED | DECLINED | CANCELLED`. A student or parent sends it, the tutor accepts or declines, the sender can cancel. Only `PENDING` requests can change.
+- **Race safety:** transitions use `updateMany ... WHERE status = 'PENDING'` and check the changed-row count. 0 rows means someone got there first, so the API returns 409 (same trick as verification).
+- **Validation before saving:** the tutor must be published with an ACTIVE account, teach the subject, and offer the mode. HOME needs an area that the tutor serves.
+- **Abuse limits:** one pending request per tutor and subject, and at most 10 pending per student. The duplicate check is in the service, so a perfectly simultaneous double-click could slip through (a partial unique index would fix that; Prisma cannot model it, so it would need raw SQL).
+- **Privacy:** email and phone of the other side appear only when status is `ACCEPTED`. This is how the platform keeps contact details protected until the tutor agrees.
+- **No id probing:** a tutor responding to someone else's request gets 404, not 403.
+- **Shortlist:** `PUT /shortlist/:tutorId` is idempotent (upsert on a unique pair). Unpublished or suspended tutors disappear from the list.
+- **Recommendations:** `GET /tutors/recommended?subjectId=..&budget=..&areaId=..&mode=..`. Hard filters first (subject, mode, area for home), then a score out of 100 computed in code: verified 35, within budget 30 (slightly above gets half), experience up to 20, area 15. Each result carries `reasons`, so the ranking is explainable (good for the viva). Results use the same Redis cache.
+- **Route order:** `/tutors/recommended` lives in the search router, mounted before `/tutors/:id`.
+- **Not yet:** notifications on status changes come in step 1.8.
 
 ### Notes: step 1.5 (Search + Redis) explained
 

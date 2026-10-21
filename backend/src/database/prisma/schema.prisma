@@ -35,18 +35,20 @@ enum VerificationStatus {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
+  id            String          @id @default(uuid())
+  email         String          @unique
   passwordHash  String
   fullName      String
   phone         String?
   role          Role
-  status        UserStatus     @default(ACTIVE)
-  emailVerified Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  status        UserStatus      @default(ACTIVE)
+  emailVerified Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   refreshTokens RefreshToken[]
   tutorProfile  TutorProfile?
+  shortlist     ShortlistItem[]
+  requests      TutorRequest[]
 
   @@index([role])
   @@map("users")
@@ -91,6 +93,8 @@ model TutorProfile {
   verificationNote   String? // admin's reason when REJECTED
   reviewedAt         DateTime?
   documents          VerificationDocument[]
+  shortlistedBy      ShortlistItem[]
+  requests           TutorRequest[]
   subjects           Subject[]
   areas              Area[]
   createdAt          DateTime               @default(now())
@@ -125,20 +129,68 @@ model City {
 }
 
 model Area {
-  id     String         @id @default(uuid())
-  name   String
-  cityId String
-  city   City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  tutors TutorProfile[]
+  id       String         @id @default(uuid())
+  name     String
+  cityId   String
+  city     City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  tutors   TutorProfile[]
+  requests TutorRequest[]
 
   @@unique([cityId, name])
   @@map("areas")
 }
 
 model Subject {
-  id     String         @id @default(uuid())
-  name   String         @unique
-  tutors TutorProfile[]
+  id       String         @id @default(uuid())
+  name     String         @unique
+  tutors   TutorProfile[]
+  requests TutorRequest[]
 
   @@map("subjects")
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+// A student's saved tutors. One row per (student, tutor).
+model ShortlistItem {
+  id             String       @id @default(uuid())
+  studentId      String
+  student        User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutorProfileId String
+  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([studentId, tutorProfileId])
+  @@index([studentId, createdAt])
+  @@map("shortlist_items")
+}
+
+// A student asks a tutor for lessons. Contact details are shared only once ACCEPTED.
+model TutorRequest {
+  id             String        @id @default(uuid())
+  studentId      String
+  student        User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutorProfileId String
+  tutorProfile   TutorProfile  @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject       @relation(fields: [subjectId], references: [id])
+  areaId         String?
+  area           Area?         @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  mode           TeachingMode // HOME or ONLINE (never BOTH: the student picks one)
+  budgetPerHour  Int?
+  message        String
+  status         RequestStatus @default(PENDING)
+  responseNote   String?
+  respondedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([studentId, status])
+  @@index([tutorProfileId, status])
+  @@map("tutor_requests")
 }

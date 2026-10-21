@@ -26,3 +26,13 @@ export const searchTutorsQuerySchema = z
   });
 
 export type SearchTutorsQuery = z.infer<typeof searchTutorsQuerySchema>;
+
+export const recommendQuerySchema = z.object({
+  subjectId: z.uuid('subjectId is required'),
+  areaId: z.uuid().optional(),
+  mode: z.enum(['HOME', 'ONLINE']).optional(),
+  budget: z.coerce.number().int().min(100).max(20000).optional(),
+  limit: z.coerce.number().int().min(1).max(20).default(5),
+});
+
+export type RecommendQuery = z.infer<typeof recommendQuerySchema>;

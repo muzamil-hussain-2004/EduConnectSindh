@@ -3,6 +3,7 @@ import { usersPaths, usersSchemas } from '../modules/users/users.docs';
 import { searchPaths, searchSchemas } from '../modules/search/search.docs';
 import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
 import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
+import { requestsPaths, requestsSchemas } from '../modules/requests/requests.docs';
 import { env } from './env';
 
 // Each module will export its own `paths` and we merge them here as we build them.
@@ -23,6 +24,9 @@ export const openApiSpec = {
     { name: 'Search', description: 'Tutor discovery with filters (Redis cached)' },
     { name: 'Verification', description: 'Tutor document verification and admin review' },
     { name: 'Catalog', description: 'Cities, areas and subjects' },
+    { name: 'Requests', description: 'Tutoring requests and tutor responses' },
+    { name: 'Shortlist', description: 'Saved tutors' },
+    { name: 'Recommendations', description: 'Scored tutor matches' },
   ],
   paths: {
     ...authPaths,
@@ -30,6 +34,7 @@ export const openApiSpec = {
     ...tutorsPaths,
     ...searchPaths,
     ...verificationPaths,
+    ...requestsPaths,
     '/health': {
       get: {
         tags: ['System'],
@@ -65,6 +70,7 @@ export const openApiSpec = {
       ...tutorsSchemas,
       ...searchSchemas,
       ...verificationSchemas,
+      ...requestsSchemas,
       Health: {
         type: 'object',
         properties: {
