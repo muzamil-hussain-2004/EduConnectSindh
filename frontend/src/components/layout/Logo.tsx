@@ -1,79 +1,60 @@
 import { useId } from 'react';
 import { Link } from 'react-router';
 
-const MAP =
-  'M56 2 66 6 72 16 66 26 76 34 86 46 84 58 94 66 92 80 84 90 74 94 66 92 58 100 50 104 42 98 34 100 24 94 10 90 2 86 10 80 20 74 22 62 18 52 24 42 22 32 30 24 36 16 46 8Z';
-const RIVER = 'M50 14C44 28 52 40 44 52 38 62 48 72 42 84 40 92 44 98 46 100';
-
-/** Open book, orbit ring and the Sindh map: the project emblem, in the brand orange. */
-export function LogoMark({ className = 'h-12 w-auto' }: { className?: string }) {
-  const id = useId();
+/** Sindh province outline with a graduation cap and the Indus running through it. */
+export function LogoMark({ className = 'size-10' }: { className?: string }) {
+  const gradient = useId();
   return (
-    <svg viewBox="0 0 200 160" className={className} role="img" aria-label="Edu Sindh Connect">
+    <svg viewBox="0 0 100 108" className={className} role="img" aria-label="EduConnect Sindh">
       <defs>
-        <linearGradient id={`${id}-m`} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient
+          id={gradient}
+          x1="20"
+          y1="0"
+          x2="85"
+          y2="105"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#FF8A5C" />
           <stop offset="1" stopColor="#E8501F" />
         </linearGradient>
       </defs>
-
-      {/* orbit ring with two nodes */}
-      <g transform="rotate(-12 100 88)" fill="none" strokeLinecap="round">
-        <path d="M8 88a92 26 0 0 1 184 0" stroke="#FF8A5C" strokeWidth="5" />
-        <path d="M30 94a72 20 0 0 0 140 0" stroke="#E8501F" strokeWidth="2.5" opacity=".55" />
-      </g>
-      <g fill="#fff" stroke="#E8501F" strokeWidth="4">
-        <circle cx="16" cy="108" r="7" />
-        <circle cx="184" cy="68" r="7" />
-      </g>
-      <g fill="#E8501F">
-        <circle cx="16" cy="108" r="2.5" />
-        <circle cx="184" cy="68" r="2.5" />
-      </g>
-
-      {/* open book: three stripes per side, mirrored */}
-      <g fill="none" strokeLinecap="round">
-        {[0, 1].map((side) => (
-          <g key={side} transform={side ? 'translate(200 0) scale(-1 1)' : undefined}>
-            <path d="M12 118Q56 104 100 134" stroke="#C2410C" strokeWidth="7" />
-            <path d="M22 130Q62 118 100 142" stroke="#E8501F" strokeWidth="7" />
-            <path d="M34 141Q68 131 100 150" stroke="#FF8A5C" strokeWidth="6" />
-          </g>
-        ))}
-        <path d="M84 150Q100 158 116 150" stroke="#C2410C" strokeWidth="4" />
-      </g>
-
-      {/* Sindh */}
-      <g transform="translate(47 2) scale(1.08)">
-        <path
-          d={MAP}
-          fill={`url(#${id}-m)`}
-          stroke="#fff"
-          strokeWidth="3"
-          strokeLinejoin="round"
-          paintOrder="stroke"
-        />
-        <path
-          d={RIVER}
-          fill="none"
-          stroke="#fff"
-          strokeOpacity=".7"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <circle cx="44" cy="62" r="2.2" fill="#fff" />
-      </g>
+      <path
+        d="M60 3 71 9 77 21 72 31 81 42 79 56 89 68 87 83 78 91 66 93 58 99 48 101 40 96 31 94 25 88 11 84 10 76 19 68 24 56 19 44 22 31 30 23 38 13 50 7Z"
+        fill={`url(#${gradient})`}
+        stroke="#E8501F"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M52 14C40 28 46 38 38 50 32 60 44 70 40 82 38 90 44 96 47 99"
+        fill="none"
+        stroke="#fff"
+        strokeOpacity=".45"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path d="M50 34 77 47 50 60 23 47Z" fill="#fff" />
+      <path d="M36 54v10c8 7 20 7 28 0V54L50 61Z" fill="#fff" fillOpacity=".92" />
+      <path d="M77 47v14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="77" cy="63" r="3" fill="#fff" />
     </svg>
   );
 }
 
 export function Logo({ light }: { light?: boolean }) {
-  const dark = light ? 'text-white' : 'text-ink';
   return (
-    <Link to="/" className="flex items-center gap-2" aria-label="Edu Sindh Connect home">
-      <LogoMark className="h-14 w-auto shrink-0" />
-      <span className={`text-xl leading-none font-bold tracking-tight ${dark}`}>
-        Edu <span className="text-brand-500">Sindh</span> Connect
+    <Link to="/" className="flex items-center gap-2.5" aria-label="EduConnect Sindh home">
+      <LogoMark className="size-11 shrink-0" />
+      <span className="flex flex-col leading-none">
+        <span className={`text-xl font-bold tracking-tight ${light ? 'text-white' : 'text-ink'}`}>
+          Edu<span className="text-brand-500">Connect</span>
+        </span>
+        <span
+          className={`mt-1 text-[10px] font-semibold tracking-[0.35em] ${light ? 'text-white/70' : 'text-muted'}`}
+        >
+          SINDH
+        </span>
       </span>
     </Link>
   );
