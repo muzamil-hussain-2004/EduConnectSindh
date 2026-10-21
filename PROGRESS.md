@@ -147,7 +147,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.9 Global error handler + `AppError` + 404 handler (no async wrapper needed in Express 5)
 - ✅ 0.10 Security middlewares (helmet, cors, rate-limit)
 - ✅ 0.11 Prisma setup + first migration + seed script
-- ⬜ 0.12 Vitest + Supertest, first test (`/health`)
+- ✅ 0.12 Vitest + Supertest, first test (`/health`)
 - ⬜ 0.13 Swagger docs at `/api/docs`
 - ⬜ 0.14 GitHub Actions CI (lint + test + build)
 
@@ -183,6 +183,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 0.9 | `AppError`, global error handler, 404 handler; consistent JSON error shape |
 | 2026-10-21 | 0.10 | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`) |
 | 2026-10-21 | 0.11 | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB |
+| 2026-10-21 | 0.12 | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -328,6 +329,35 @@ Order in `app.ts` matters: logging → helmet → cors → compression → rate 
 - **Version note:** `npm i prisma` currently points to an 8.0 release candidate, so we pinned stable **7.10.1** for both `prisma` and `@prisma/client`.
 - `/health` now runs `SELECT 1`, so it reports `"database":"up"`, and the DB connection closes on shutdown.
 - **Needs Docker running:** `npm run docker:up` first, otherwise the DB is unreachable.
+
+### Notes: where the data lives
+
+- Data is in the **Docker** Postgres container (`educonnect-postgres`, volume `backend_postgres_data`), **not** in the Postgres installed on Windows.
+- Docker Postgres is on port **5433**; the Windows one is on 5432.
+- **pgAdmin:** register a new server with host `localhost`, port **5433**, database `educonnect`, user `educonnect`, password = `POSTGRES_PASSWORD` from `backend/.env`.
+- Quick alternatives: `npm run db:studio` (browser GUI) or `docker exec -it educonnect-postgres psql -U educonnect -d educonnect`.
+- `docker compose down` keeps the data; `docker compose down -v` and `npm run db:reset` delete it.
+
+### Notes: step 0.12 explained (automated testing)
+
+- **Why test:** a test is code that checks your code. When you change something next month, running the tests tells you in seconds if you broke something. It also impresses examiners.
+- **Vitest** is the test runner (fast, TypeScript-friendly). **Supertest** calls your Express app directly in memory, so there's no port and no real HTTP.
+- **Key design payoff:** this works because `createApp()` is separate from `server.ts` (step 0.8).
+- **Test layout:**
+  - `tests/unit/`: tests of one piece in isolation, no database ([errorHandler.test.ts](backend/tests/unit/errorHandler.test.ts) uses a tiny app with routes that throw on purpose).
+  - `tests/integration/`: the real app plus the real database ([health.test.ts](backend/tests/integration/health.test.ts)).
+  - `tests/e2e/` stays empty until later.
+- **Anatomy of a test** (Arrange, Act, Assert):
+  ```ts
+  it('returns 404 for unknown routes', async () => {
+    const res = await request(app).get('/does-not-exist'); // act
+    expect(res.status).toBe(404);                          // assert
+  });
+  ```
+- **[vitest.config.mts](backend/vitest.config.mts)** sets `NODE_ENV=test` (this also silences logs and disables rate limiting) and fallback env values, so tests run on a fresh clone or in CI without a `.env`.
+- **Commands:** `npm test` (run once), `npm run test:watch` (re-run on save), `npm run test:coverage` (shows which lines are tested; currently about 84%).
+- **Rule going forward:** every new endpoint gets tests (happy path plus the failure cases) before we tick it off.
+- Integration tests need Docker Postgres running (`npm run docker:up`).
 
 ---
 
