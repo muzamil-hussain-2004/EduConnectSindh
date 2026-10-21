@@ -163,6 +163,14 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.7 Reviews & ratings (+ moderation)
 - ✅ 1.8 Notifications (BullMQ + Socket.IO)
 
+### Frontend track
+
+- ✅ F1 Foundation + auth (Vite, Tailwind, Redux Toolkit, routing, guards)
+- ⬜ F2 Tutor search and profile pages
+- ⬜ F3 Requests, shortlist, notification bell (Socket.IO)
+- ⬜ F4 Tutor dashboard, profile editing, verification upload
+- ⬜ F5 Admin screens
+
 ### Phase 2 — Learning platform
 
 - ⬜ 2.1 Courses, lessons, enrollment, progress
@@ -177,28 +185,39 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Changelog
 
-| Date       | Step     | Notes                                                                                                                                                                   |
-| ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created                                                                                                                       |
-| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified                                                                       |
-| 2026-10-18 | 0.5      | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit                                                                                         |
-| 2026-10-21 | 0.6      | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts                                                                          |
-| 2026-10-21 | 0.7      | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config                                                                                          |
-| 2026-10-21 | 0.8      | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000                                                                                     |
-| 2026-10-21 | 0.9      | `AppError`, global error handler, 404 handler; consistent JSON error shape                                                                                              |
-| 2026-10-21 | 0.10     | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`)                                                                              |
-| 2026-10-21 | 0.11     | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB                                                  |
-| 2026-10-21 | 0.12     | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report                                                                                   |
-| 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                                                                              |
-| 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                                                                   |
-| 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                                                                    |
-| 2026-10-21 | 1.2      | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests                                                                |
-| 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests |
-| 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                          |
-| 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                             |
-| 2026-10-21 | 1.6      | Requests (send, accept, decline, cancel), shortlist, scored recommendations; contact shared only after accept; 117 tests |
-| 2026-10-21 | 1.7      | Reviews: accepted-request-only, one per author, admin hide/unhide, cached ratingAvg/ratingCount, search `minRating` + `sort=rating`; 124 tests; added `docs/ARCHITECTURE.md` |
-| 2026-10-21 | 1.8      | Notifications: BullMQ queue + worker, Socket.IO live push (JWT-authenticated rooms), saved in DB, 4 REST endpoints, triggers on requests/reviews/verification; 131 tests; added `docs/DEPENDENCIES.md` |
+| Date       | Step     | Notes                                                                                                                                                                                                                                                      |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-18 | 0.1, 0.2 | Stack chosen; `backend/` folder structure created                                                                                                                                                                                                          |
+| 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified                                                                                                                                                          |
+| 2026-10-18 | 0.5      | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit                                                                                                                                                                            |
+| 2026-10-21 | 0.6      | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts                                                                                                                                                             |
+| 2026-10-21 | 0.7      | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config                                                                                                                                                                             |
+| 2026-10-21 | 0.8      | Express 5 app, Pino logging, `/health`, graceful shutdown; server runs on port 5000                                                                                                                                                                        |
+| 2026-10-21 | 0.9      | `AppError`, global error handler, 404 handler; consistent JSON error shape                                                                                                                                                                                 |
+| 2026-10-21 | 0.10     | helmet, CORS (only `CLIENT_URL`), compression, rate limiters (`apiLimiter`, `authLimiter`)                                                                                                                                                                 |
+| 2026-10-21 | 0.11     | Prisma 7.10 + PostgreSQL: `init` migration (users, refresh_tokens, cities, areas, subjects), seed, `/health` checks DB                                                                                                                                     |
+| 2026-10-21 | 0.12     | Vitest 5 + Supertest: 8 tests (health, 404, bad JSON, error handler), coverage report                                                                                                                                                                      |
+| 2026-10-21 | 0.13     | Swagger UI at `/api/docs` (OpenAPI 3 spec in `config/swagger.ts`), 2 more tests (10 total)                                                                                                                                                                 |
+| 2026-10-21 | 0.14     | GitHub Actions workflow `backend-ci.yml` (format, lint, typecheck, test, build). **Phase 0 complete**                                                                                                                                                      |
+| 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                                                                                                                                                       |
+| 2026-10-21 | 1.2      | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests                                                                                                                                                   |
+| 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests                                                                                    |
+| 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                                                                                                             |
+| 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                                                                                                                |
+| 2026-10-21 | 1.6      | Requests (send, accept, decline, cancel), shortlist, scored recommendations; contact shared only after accept; 117 tests                                                                                                                                   |
+| 2026-10-21 | 1.7      | Reviews: accepted-request-only, one per author, admin hide/unhide, cached ratingAvg/ratingCount, search `minRating` + `sort=rating`; 124 tests; added `docs/ARCHITECTURE.md`                                                                               |
+| 2026-10-21 | 1.8      | Notifications: BullMQ queue + worker, Socket.IO live push (JWT-authenticated rooms), saved in DB, 4 REST endpoints, triggers on requests/reviews/verification; 131 tests; added `docs/DEPENDENCIES.md`                                                     |
+| 2026-10-21 | F1       | Frontend foundation: Vite + React 19 + TS strict, Tailwind 4, Redux Toolkit + RTK Query, React Router, RHF + Zod; auth (login/register/logout, session restore, single-flight refresh, route guards); 8 tests; `frontend-ci.yml`; added `docs/FRONTEND.md` |
+
+### Notes: step F1 (Frontend foundation + auth) explained
+
+- **Full explanation:** [docs/FRONTEND.md](./docs/FRONTEND.md) (structure, login flow, token security, libraries).
+- **Token safety:** access token lives only in Redux memory; the refresh token is an httpOnly cookie. On reload `AuthBootstrap` calls `/auth/refresh` to restore the session.
+- **Single-flight refresh:** refresh tokens rotate with reuse detection, so concurrent refreshes (StrictMode, parallel 401s) share one request.
+- **Auto re-auth:** RTK Query base query retries a request once after a 401 and a successful refresh.
+- **Dev proxy:** Vite forwards `/api` and `/socket.io` to port 5000, so the cookie is same-origin.
+- **Forms:** Zod schemas mirror backend rules; server validation `details` are mapped onto fields.
+- **Next:** F2 tutor search and profile pages.
 
 ### Notes: step 1.8 (Notifications, BullMQ, Socket.IO) explained
 

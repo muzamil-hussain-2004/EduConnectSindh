@@ -34,20 +34,20 @@ Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.m
 
 ## Tech stack
 
-| Area                 | Technology                                                                |
-| -------------------- | ------------------------------------------------------------------------- |
-| Runtime and language | Node.js 20+, TypeScript (strict)                                          |
-| API                  | Express 5, REST, OpenAPI/Swagger                                          |
-| Database             | PostgreSQL 16 with Prisma ORM                                             |
-| Cache, queues, realtime | Redis 7, BullMQ (jobs), Socket.IO (live push)                          |
-| Auth                 | JWT access tokens, rotating refresh tokens, argon2 password hashing, RBAC |
-| Validation           | Zod                                                                       |
-| Security             | helmet, CORS, rate limiting                                               |
-| Logging              | Pino                                                                      |
-| Testing              | Vitest, Supertest                                                         |
-| Quality              | ESLint, Prettier, Husky, lint-staged                                      |
-| DevOps               | Docker Compose, GitHub Actions                                            |
-| Frontend (planned)   | React, Tailwind CSS                                                       |
+| Area                    | Technology                                                                |
+| ----------------------- | ------------------------------------------------------------------------- |
+| Runtime and language    | Node.js 20+, TypeScript (strict)                                          |
+| API                     | Express 5, REST, OpenAPI/Swagger                                          |
+| Database                | PostgreSQL 16 with Prisma ORM                                             |
+| Cache, queues, realtime | Redis 7, BullMQ (jobs), Socket.IO (live push)                             |
+| Auth                    | JWT access tokens, rotating refresh tokens, argon2 password hashing, RBAC |
+| Validation              | Zod                                                                       |
+| Security                | helmet, CORS, rate limiting                                               |
+| Logging                 | Pino                                                                      |
+| Testing                 | Vitest, Supertest                                                         |
+| Quality                 | ESLint, Prettier, Husky, lint-staged                                      |
+| DevOps                  | Docker Compose, GitHub Actions                                            |
+| Frontend                | React 19, Vite, Tailwind CSS 4, Redux Toolkit + RTK Query, React Router   |
 
 ## Architecture
 
@@ -86,6 +86,7 @@ EduConnectSindh/
 │  │  └─ database/              # Prisma schema, migrations, seeds
 │  ├─ tests/                    # unit/, integration/, e2e/
 │  └─ docker-compose.yml        # PostgreSQL + Redis
+├─ frontend/                    # React app (see docs/FRONTEND.md)
 ├─ .github/workflows/           # CI
 ├─ PROGRESS.md                  # build guide and tracker
 └─ README.md
@@ -115,6 +116,16 @@ npm run db:seed               # starter data: Jamshoro, areas, subjects, admin u
 npm run dev                   # API on http://localhost:5000
 ```
 
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                   # http://localhost:5173 (proxies /api to the backend on :5000)
+```
+
+Other scripts: `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`. See [docs/FRONTEND.md](./docs/FRONTEND.md) for structure and flow.
+
 ### Useful URLs
 
 | URL                            | What                              |
@@ -141,54 +152,54 @@ npm run dev                   # API on http://localhost:5000
 
 Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 
-| Method | Path                                 | Description                                             | Auth          |
-| ------ | ------------------------------------ | ------------------------------------------------------- | ------------- |
-| POST   | `/auth/register`                     | Create a student, parent or tutor account               | Public        |
-| POST   | `/auth/login`                        | Log in, receive an access token and refresh cookie      | Public        |
-| POST   | `/auth/refresh`                      | Rotate the refresh token, get a new access token        | Cookie        |
-| POST   | `/auth/logout`                       | Revoke the refresh token                                | Cookie        |
-| PATCH  | `/users/me`                          | Update my name / phone                                  | Bearer token  |
-| POST   | `/users/me/password`                 | Change password (logs out all devices)                  | Bearer token  |
-| GET    | `/users`                             | List users (pagination, role/status/search filters)     | Admin         |
-| PATCH  | `/users/:id/status`                  | Suspend or reactivate a user                            | Admin         |
-| GET    | `/tutors/me`                         | My tutor profile                                        | Tutor         |
-| PUT    | `/tutors/me`                         | Create or replace my tutor profile                      | Tutor         |
-| GET    | `/tutors`                            | Search tutors (filters, sort, pagination, Redis cached) | Public        |
-| GET    | `/tutors/recommended`                | Best-matching tutors with score and reasons             | Public        |
-| GET    | `/tutors/:id`                        | Public tutor profile (published only)                   | Public        |
-| POST   | `/requests`                          | Send a tutoring request                                 | Student/Parent |
-| GET    | `/requests/mine`                     | My sent requests                                        | Student/Parent |
-| GET    | `/requests/incoming`                 | Requests I received                                     | Tutor         |
-| POST   | `/requests/:id/accept`               | Accept a pending request (shares contact)               | Tutor         |
-| POST   | `/requests/:id/decline`              | Decline a pending request                               | Tutor         |
-| POST   | `/requests/:id/cancel`               | Cancel my pending request                               | Student/Parent |
-| GET    | `/shortlist`                         | My saved tutors                                         | Student/Parent |
-| PUT    | `/shortlist/:id`                     | Save a tutor (idempotent)                               | Student/Parent |
-| DELETE | `/shortlist/:id`                     | Remove a saved tutor                                    | Student/Parent |
-| GET    | `/tutors/:id/reviews`                | Visible reviews of a tutor                              | Public        |
-| PUT    | `/tutors/:id/reviews`                | Create or edit my review (needs accepted request)       | Student/Parent |
-| DELETE | `/tutors/:id/reviews`                | Delete my review                                        | Student/Parent |
-| GET    | `/reviews`                           | Moderation queue                                        | Admin         |
-| POST   | `/reviews/:id/hide`                  | Hide a review                                           | Admin         |
-| POST   | `/reviews/:id/unhide`                | Restore a review                                        | Admin         |
-| GET    | `/notifications`                     | My notifications (`unreadOnly`, pagination)             | Any user      |
-| GET    | `/notifications/unread-count`        | Unread count for the bell badge                         | Any user      |
-| POST   | `/notifications/:id/read`            | Mark one as read                                        | Any user      |
-| POST   | `/notifications/read-all`            | Mark all as read                                        | Any user      |
+| Method | Path                          | Description                                             | Auth           |
+| ------ | ----------------------------- | ------------------------------------------------------- | -------------- |
+| POST   | `/auth/register`              | Create a student, parent or tutor account               | Public         |
+| POST   | `/auth/login`                 | Log in, receive an access token and refresh cookie      | Public         |
+| POST   | `/auth/refresh`               | Rotate the refresh token, get a new access token        | Cookie         |
+| POST   | `/auth/logout`                | Revoke the refresh token                                | Cookie         |
+| PATCH  | `/users/me`                   | Update my name / phone                                  | Bearer token   |
+| POST   | `/users/me/password`          | Change password (logs out all devices)                  | Bearer token   |
+| GET    | `/users`                      | List users (pagination, role/status/search filters)     | Admin          |
+| PATCH  | `/users/:id/status`           | Suspend or reactivate a user                            | Admin          |
+| GET    | `/tutors/me`                  | My tutor profile                                        | Tutor          |
+| PUT    | `/tutors/me`                  | Create or replace my tutor profile                      | Tutor          |
+| GET    | `/tutors`                     | Search tutors (filters, sort, pagination, Redis cached) | Public         |
+| GET    | `/tutors/recommended`         | Best-matching tutors with score and reasons             | Public         |
+| GET    | `/tutors/:id`                 | Public tutor profile (published only)                   | Public         |
+| POST   | `/requests`                   | Send a tutoring request                                 | Student/Parent |
+| GET    | `/requests/mine`              | My sent requests                                        | Student/Parent |
+| GET    | `/requests/incoming`          | Requests I received                                     | Tutor          |
+| POST   | `/requests/:id/accept`        | Accept a pending request (shares contact)               | Tutor          |
+| POST   | `/requests/:id/decline`       | Decline a pending request                               | Tutor          |
+| POST   | `/requests/:id/cancel`        | Cancel my pending request                               | Student/Parent |
+| GET    | `/shortlist`                  | My saved tutors                                         | Student/Parent |
+| PUT    | `/shortlist/:id`              | Save a tutor (idempotent)                               | Student/Parent |
+| DELETE | `/shortlist/:id`              | Remove a saved tutor                                    | Student/Parent |
+| GET    | `/tutors/:id/reviews`         | Visible reviews of a tutor                              | Public         |
+| PUT    | `/tutors/:id/reviews`         | Create or edit my review (needs accepted request)       | Student/Parent |
+| DELETE | `/tutors/:id/reviews`         | Delete my review                                        | Student/Parent |
+| GET    | `/reviews`                    | Moderation queue                                        | Admin          |
+| POST   | `/reviews/:id/hide`           | Hide a review                                           | Admin          |
+| POST   | `/reviews/:id/unhide`         | Restore a review                                        | Admin          |
+| GET    | `/notifications`              | My notifications (`unreadOnly`, pagination)             | Any user       |
+| GET    | `/notifications/unread-count` | Unread count for the bell badge                         | Any user       |
+| POST   | `/notifications/:id/read`     | Mark one as read                                        | Any user       |
+| POST   | `/notifications/read-all`     | Mark all as read                                        | Any user       |
 
 Live events: connect to Socket.IO on the same port with `auth: { token: <accessToken> }` and listen for the `notification` event.
-| GET    | `/catalog/cities`                    | Cities with their areas                                 | Public        |
-| GET    | `/catalog/subjects`                  | All subjects                                            | Public        |
-| GET    | `/verification/me`                   | My verification status and documents                    | Tutor         |
-| POST   | `/verification/documents`            | Upload a CNIC/degree file (JPG, PNG, PDF, max 5 MB)     | Tutor         |
-| DELETE | `/verification/documents/:id`        | Delete my document                                      | Tutor         |
-| POST   | `/verification/submit`               | Submit documents for review                             | Tutor         |
-| GET    | `/verification/documents/:id/file`   | Download a document                                     | Owner / Admin |
-| GET    | `/verification/requests`             | List requests (filter by status)                        | Admin         |
-| GET    | `/verification/requests/:id`         | Request details with documents                          | Admin         |
-| POST   | `/verification/requests/:id/approve` | Approve (tutor becomes VERIFIED)                        | Admin         |
-| POST   | `/verification/requests/:id/reject`  | Reject with a reason                                    | Admin         |
-| GET    | `/auth/me`                           | Current user                                            | Bearer token  |
+| GET | `/catalog/cities` | Cities with their areas | Public |
+| GET | `/catalog/subjects` | All subjects | Public |
+| GET | `/verification/me` | My verification status and documents | Tutor |
+| POST | `/verification/documents` | Upload a CNIC/degree file (JPG, PNG, PDF, max 5 MB) | Tutor |
+| DELETE | `/verification/documents/:id` | Delete my document | Tutor |
+| POST | `/verification/submit` | Submit documents for review | Tutor |
+| GET | `/verification/documents/:id/file` | Download a document | Owner / Admin |
+| GET | `/verification/requests` | List requests (filter by status) | Admin |
+| GET | `/verification/requests/:id` | Request details with documents | Admin |
+| POST | `/verification/requests/:id/approve` | Approve (tutor becomes VERIFIED) | Admin |
+| POST | `/verification/requests/:id/reject` | Reject with a reason | Admin |
+| GET | `/auth/me` | Current user | Bearer token |
 
 ## Security highlights
 
