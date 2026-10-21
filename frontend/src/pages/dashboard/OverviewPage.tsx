@@ -12,6 +12,7 @@ import { useGetMyVerificationQuery } from '@/features/verification/verificationA
 import { VerificationBadge } from '@/components/tutors/StatusBadge';
 import { isSeeker } from '@/lib/format';
 import { PageHeader } from './PageHeader';
+import { AdminOverviewPage } from './AdminOverviewPage';
 
 function Stat({ label, value, to }: { label: string; value: React.ReactNode; to: string }) {
   return (
@@ -62,6 +63,7 @@ export function OverviewPage() {
   const user = useAppSelector((s) => s.auth.user);
   const { data: unread } = useGetUnreadCountQuery();
   if (!user) return null;
+  if (user.role === 'ADMIN') return <AdminOverviewPage />;
 
   return (
     <>
@@ -72,12 +74,6 @@ export function OverviewPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {isSeeker(user.role) && <SeekerStats />}
         {user.role === 'TUTOR' && <TutorStats />}
-        {user.role === 'ADMIN' && (
-          <>
-            <Stat label="Verification queue" value="Open" to="/dashboard/admin/verification" />
-            <Stat label="Review moderation" value="Open" to="/dashboard/admin/reviews" />
-          </>
-        )}
         <Stat label="Unread notifications" value={unread ?? '–'} to="/dashboard/notifications" />
       </div>
       {isSeeker(user.role) && (

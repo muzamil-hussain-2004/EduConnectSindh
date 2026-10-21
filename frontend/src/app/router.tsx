@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { GuestRoute, ProtectedRoute } from '@/components/layout/RouteGuards';
 import { AdminReviewsPage } from '@/pages/dashboard/AdminReviewsPage';
+import { AdminUsersPage } from '@/pages/dashboard/AdminUsersPage';
 import { AdminVerificationPage } from '@/pages/dashboard/AdminVerificationPage';
 import { CourseEditorPage } from '@/pages/dashboard/CourseEditorPage';
 import { MyCoursesPage } from '@/pages/dashboard/MyCoursesPage';
@@ -81,6 +82,7 @@ export const routes = [
                 element: <ProtectedRoute roles={['ADMIN']} />,
                 children: [
                   { path: 'admin/verification', element: <AdminVerificationPage /> },
+                  { path: 'admin/users', element: <AdminUsersPage /> },
                   { path: 'admin/reviews', element: <AdminReviewsPage /> },
                 ],
               },

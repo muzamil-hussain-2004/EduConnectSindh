@@ -4,6 +4,8 @@ import { searchPaths, searchSchemas } from '../modules/search/search.docs';
 import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
 import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
 import { requestsPaths, requestsSchemas } from '../modules/requests/requests.docs';
+import { adminPaths } from '../modules/admin/admin.docs';
+import { assistantPaths, assistantSchemas } from '../modules/assistant/assistant.docs';
 import { classesPaths, classesSchemas } from '../modules/classes/classes.docs';
 import { coursesPaths, coursesSchemas } from '../modules/courses/courses.docs';
 import { reviewsPaths, reviewsSchemas } from '../modules/reviews/reviews.docs';
@@ -34,6 +36,8 @@ export const openApiSpec = {
     { name: 'Reviews', description: 'Ratings, comments and admin moderation' },
     { name: 'Courses', description: 'Courses, lessons, enrollment and progress' },
     { name: 'Classes', description: 'Scheduled live classes and seat booking' },
+    { name: 'Assistant', description: 'AI study assistant grounded in course lessons' },
+    { name: 'Admin', description: 'Platform statistics for administrators' },
     { name: 'Notifications', description: 'In-app notifications (saved + live via Socket.IO)' },
   ],
   paths: {
@@ -46,6 +50,8 @@ export const openApiSpec = {
     ...reviewsPaths,
     ...coursesPaths,
     ...classesPaths,
+    ...assistantPaths,
+    ...adminPaths,
     ...notificationsPaths,
     '/health': {
       get: {
@@ -86,6 +92,7 @@ export const openApiSpec = {
       ...reviewsSchemas,
       ...coursesSchemas,
       ...classesSchemas,
+      ...assistantSchemas,
       Health: {
         type: 'object',
         properties: {

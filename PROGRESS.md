@@ -174,10 +174,10 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 
 ### Phase 2 — Learning platform
 
-- ✅ 2.1 Courses, lessons, enrollment, progress (backend; frontend pages pending)
-- ⬜ 2.2 Virtual class scheduling
-- ⬜ 2.3 AI learning assistant
-- ⬜ 2.4 Admin dashboard APIs
+- ✅ 2.1 Courses, lessons, enrollment, progress (backend + frontend pages)
+- ✅ 2.2 Virtual class scheduling
+- ✅ 2.3 AI learning assistant
+- ✅ 2.4 Admin dashboard APIs and UI
 
 ### Phase 3 — Polish
 
@@ -211,6 +211,20 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | F1       | Frontend foundation: Vite + React 19 + TS strict, Tailwind 4, Redux Toolkit + RTK Query, React Router, RHF + Zod; auth (login/register/logout, session restore, single-flight refresh, route guards); 8 tests; `frontend-ci.yml`; added `docs/FRONTEND.md`                                                                              |
 | 2026-10-22 | F2–F6    | Frontend pages in the E-Tutor design (orange `#FF6636`, Inter): home, browse with URL-param filters (sidebar on desktop, sheet on mobile), tutor detail + request modal + reviews, role-aware dashboard (seeker, tutor, admin), live notifications over Socket.IO; backend DTO now returns `ratingAvg`/`ratingCount`; 11 frontend tests |
 | 2026-10-22 | 2.1      | Courses backend: courses, lessons, enrollments, lesson progress (4 tables), tutor authoring + publish rule, public catalogue with filters/sort/paging, enroll/unenroll, lesson access control, progress %, `COURSE_ENROLLED` notification; 137 backend tests                                                                            |
+| 2026-10-22 | 2.1 UI   | Course frontend: catalogue, detail, lesson player with progress, My learning, tutor course builder with lesson modal and publish                                                                                                                                                                                                        |
+| 2026-10-22 | 2.2      | Classes: `class_sessions` + `class_bookings`, safe seat booking (row lock), private meeting link, schedule/cancel notifications; 141 tests                                                                                                                                                                                              |
+| 2026-10-22 | 2.3      | AI assistant: `POST /courses/:id/assistant`, answers only from lessons; local keyword retrieval by default, OpenAI-compatible LLM if `AI_API_KEY` is set; per-user rate limit                                                                                                                                                           |
+| 2026-10-22 | 2.4      | Admin: `GET /admin/stats` (counts + 14-day sign-ups), overview dashboard and users page (search, filter, suspend); **144 backend tests**. **Phase 2 complete**                                                                                                                                                                          |
+
+### Notes: steps 2.1 UI to 2.4 explained
+
+**Course and class screens.** Each feature has a `*Api.ts` (RTK Query) that talks to the backend, and pages that read from it. Flow: page -> `useXQuery` hook -> `baseApi` (adds the token) -> Express route -> service -> Prisma -> PostgreSQL, then the JSON comes back and RTK Query caches it. Mutations list `invalidatesTags` so the lists refresh by themselves.
+
+**2.2 Classes.** A tutor schedules a class (optionally linked to one of their courses). Students book a seat. Two students can click "Book" for the last seat at the same moment, so booking runs in a transaction that first locks the class row (`SELECT ... FOR UPDATE`); the second request waits, sees the class full and gets a 409. The meeting link never appears in lists; only `GET /classes/:id/join` returns it, and only to the tutor, a booked student or an admin.
+
+**2.3 AI assistant.** The student asks a question on the lesson page. The backend checks they are enrolled, loads the course lessons and answers from them only. Without an API key it ranks short passages by shared keywords and returns the best three with the lesson names as sources. With `AI_API_KEY` (any OpenAI-compatible API) it sends the lesson text plus the question to the model with a "answer only from this material" instruction; if the provider fails it falls back to the local answer. A per-user rate limit protects the budget.
+
+**2.4 Admin.** `GET /admin/stats` runs cheap `COUNT`/`GROUP BY` queries in parallel and one SQL query for daily sign-ups, zero-filled so the chart has 14 bars. The admin dashboard home shows these tiles; the Users page reuses `GET /users` and `PATCH /users/:id/status`.
 
 ### Notes: step 2.1 (Courses, lessons, enrollment, progress) explained
 

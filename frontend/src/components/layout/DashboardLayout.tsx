@@ -11,6 +11,7 @@ import {
   LogOut,
   MessageSquareWarning,
   UserCog,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
@@ -60,6 +61,7 @@ const NAV: Record<Role, Item[]> = {
   ADMIN: [
     ...COMMON,
     { to: '/dashboard/admin/verification', label: 'Verifications', icon: FileCheck2 },
+    { to: '/dashboard/admin/users', label: 'Users', icon: Users },
     { to: '/dashboard/admin/reviews', label: 'Reviews', icon: MessageSquareWarning },
     NOTIFS,
   ],

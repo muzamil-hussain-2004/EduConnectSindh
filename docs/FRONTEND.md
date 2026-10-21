@@ -70,17 +70,24 @@ LoginForm (React Hook Form + Zod validate in browser)
 
 ## 7. Pages and routes
 
-| Route                                              | Who             | What                                                  |
-| -------------------------------------------------- | --------------- | ----------------------------------------------------- |
-| `/`                                                | everyone        | Hero search, subjects, top-rated tutors, how it works |
-| `/tutors`                                          | everyone        | Search with filters, sort, pagination                 |
-| `/tutors/:id`                                      | everyone        | Profile, reviews, "Send request" (students/parents)   |
-| `/login`, `/register`                              | guests          | Auth                                                  |
-| `/dashboard`                                       | signed in       | Role-aware overview                                   |
-| `/dashboard/requests`, `/shortlist`                | student, parent | Sent requests (cancel), saved tutors                  |
-| `/dashboard/incoming`, `/profile`, `/verification` | tutor           | Accept/decline, edit profile, upload documents        |
-| `/dashboard/admin/verification`, `/admin/reviews`  | admin           | Approve/reject tutors, hide/restore reviews           |
-| `/dashboard/notifications`                         | signed in       | Notification list, mark read                          |
+| Route                                                | Who             | What                                                  |
+| ---------------------------------------------------- | --------------- | ----------------------------------------------------- |
+| `/`                                                  | everyone        | Hero search, subjects, top-rated tutors, how it works |
+| `/tutors`                                            | everyone        | Search with filters, sort, pagination                 |
+| `/tutors/:id`                                        | everyone        | Profile, reviews, "Send request" (students/parents)   |
+| `/login`, `/register`                                | guests          | Auth                                                  |
+| `/dashboard`                                         | signed in       | Role-aware overview                                   |
+| `/dashboard/requests`, `/shortlist`                  | student, parent | Sent requests (cancel), saved tutors                  |
+| `/dashboard/incoming`, `/profile`, `/verification`   | tutor           | Accept/decline, edit profile, upload documents        |
+| `/dashboard/admin/verification`, `/admin/reviews`    | admin           | Approve/reject tutors, hide/restore reviews           |
+| `/dashboard/notifications`                           | signed in       | Notification list, mark read                          |
+| `/courses`, `/courses/:id`                           | everyone        | Course catalogue and outline; enroll                  |
+| `/courses/:id/lessons/:lid`                          | enrolled, owner | Lesson player, progress, study assistant              |
+| `/classes`                                           | everyone        | Upcoming live classes; book a seat                    |
+| `/dashboard/learning`, `/dashboard/classes`          | student, parent | Enrolled courses with progress; booked classes        |
+| `/dashboard/courses`, `/courses/new`, `/courses/:id` | tutor           | Course builder, lessons, publish                      |
+| `/dashboard/live`                                    | tutor           | Schedule and cancel live classes                      |
+| `/dashboard` (admin), `/dashboard/admin/users`       | admin           | Platform stats and sign-up chart; suspend users       |
 
 ## 8. Data flow (example: sending a request)
 
@@ -99,4 +106,4 @@ Mobile first: layouts are single column and grow at `sm` (640px), `md` (768px) a
 
 ## 11. Next frontend steps
 
-Phase 2 UI (courses, virtual classes, AI assistant) once the backend APIs exist, then deployment.
+Phase 2 UI is built. Remaining: deployment (Docker, cloud demo), final docs and ERD.

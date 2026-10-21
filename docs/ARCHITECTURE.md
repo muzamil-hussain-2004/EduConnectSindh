@@ -138,6 +138,15 @@ Why store `ratingAvg` on the tutor? Sorting and filtering by rating then needs n
 
 Why "accepted request required"? It stops fake reviews from strangers; a review means the student actually dealt with this tutor.
 
+## 6b. Phase 2 flows: classes, assistant, admin
+
+```
+Book a seat   POST /classes/:id/book ─► transaction: lock class row (FOR UPDATE) ─► count bookings ─► insert or 409
+Join          GET /classes/:id/join  ─► owner / booked student / admin only (meeting link is never in lists)
+Ask assistant POST /courses/:id/assistant ─► enrolled? ─► load lessons ─► LLM (if AI_API_KEY) or keyword retrieval ─► {answer, sources}
+Admin stats   GET /admin/stats ─► parallel COUNT/GROUP BY + one daily sign-up query
+```
+
 ## 7. Redis caching flow (cache-aside)
 
 ```

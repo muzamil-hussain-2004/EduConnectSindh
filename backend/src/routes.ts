@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authRoutes } from './modules/auth/auth.routes';
 import { coursesRoutes, enrollmentsRoutes } from './modules/courses/courses.routes';
+import { adminRoutes } from './modules/admin/admin.routes';
+import { assistantRoutes } from './modules/assistant/assistant.routes';
 import { classesRoutes } from './modules/classes/classes.routes';
 import { catalogRoutes } from './modules/locations/catalog.routes';
 import { searchRoutes } from './modules/search/search.routes';
@@ -25,6 +27,8 @@ apiRoutes.use('/catalog', catalogRoutes);
 apiRoutes.use('/requests', requestsRoutes);
 apiRoutes.use('/shortlist', shortlistRoutes);
 apiRoutes.use('/verification', verificationRoutes);
+apiRoutes.use('/courses', assistantRoutes);
 apiRoutes.use('/courses', coursesRoutes);
 apiRoutes.use('/enrollments', enrollmentsRoutes);
 apiRoutes.use('/classes', classesRoutes);
+apiRoutes.use('/admin', adminRoutes);

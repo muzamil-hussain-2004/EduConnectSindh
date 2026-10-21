@@ -3,10 +3,16 @@ import { rateLimit } from 'express-rate-limit';
 import { env } from '../config/env';
 import { AppError } from '../shared/errors/AppError';
 
-function createLimiter(windowMs: number, limit: number, message: string) {
+function createLimiter(
+  windowMs: number,
+  limit: number,
+  message: string,
+  keyGenerator?: Options['keyGenerator'],
+) {
   const options: Partial<Options> = {
     windowMs,
     limit,
+    ...(keyGenerator && { keyGenerator }),
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     skip: () => env.NODE_ENV === 'test',
@@ -23,4 +29,12 @@ export const authLimiter = createLimiter(
   15 * 60_000,
   10,
   'Too many attempts, please try again in 15 minutes',
+);
+
+// The AI assistant costs money per call: 15 questions per minute per signed-in user.
+export const assistantLimiter = createLimiter(
+  60_000,
+  15,
+  'You are asking too fast, please wait a moment',
+  (req) => req.user?.id ?? 'anonymous',
 );

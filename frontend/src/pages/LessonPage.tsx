@@ -1,6 +1,7 @@
 import { CheckCircle2, ChevronLeft, ChevronRight, Circle, ExternalLink } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
+import { AssistantPanel } from '@/components/assistant/AssistantPanel';
 import { ProgressBar } from '@/components/courses/CourseCard';
 import { Button, buttonClass } from '@/components/ui/Button';
 import { ErrorBlock, LoadingBlock } from '@/components/ui/Feedback';
@@ -114,6 +115,7 @@ export function LessonPage() {
             </li>
           ))}
         </ul>
+        {enrolled && <AssistantPanel courseId={id} lessonId={lessonId} />}
       </aside>
     </div>
   );

@@ -21,6 +21,12 @@ const envSchema = z.object({
 
   // Private verification documents live here (never served statically).
   UPLOAD_DIR: z.string().default('uploads/.private'),
+
+  // Optional: any OpenAI-compatible chat API. Without a key the assistant
+  // falls back to a built-in search over the course's own lessons.
+  AI_API_KEY: z.string().min(1).optional(),
+  AI_BASE_URL: z.url().default('https://api.openai.com/v1'),
+  AI_MODEL: z.string().default('gpt-4o-mini'),
 });
 
 export type Env = z.infer<typeof envSchema>;
