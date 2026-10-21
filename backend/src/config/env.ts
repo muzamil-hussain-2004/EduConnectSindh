@@ -15,6 +15,9 @@ const envSchema = z.object({
 
   CLIENT_URL: z.url().default('http://localhost:5173'),
 
+  // 'none' is needed when the frontend and API live on different sites (e.g. Vercel + Render).
+  COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
+
   // Optional: if both are set, `npm run db:seed` creates this admin account.
   ADMIN_EMAIL: z.email().optional(),
   ADMIN_PASSWORD: z.string().min(8).optional(),

@@ -29,7 +29,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "cd .. && husky"
+    "prepare": "cd .. && husky || exit 0"
   },
   "lint-staged": {
     "*.{ts,mjs,js}": [

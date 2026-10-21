@@ -9,8 +9,9 @@ const REFRESH_COOKIE = 'refreshToken';
 // httpOnly: JavaScript in the browser can never read it. Only sent to the auth routes.
 const cookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: 'lax',
+  // Browsers only accept SameSite=None cookies over HTTPS, so it forces `secure`.
+  secure: isProduction || env.COOKIE_SAME_SITE === 'none',
+  sameSite: env.COOKIE_SAME_SITE,
   path: '/api/v1/auth',
 };
 

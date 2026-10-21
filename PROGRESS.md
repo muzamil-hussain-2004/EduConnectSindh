@@ -178,6 +178,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 2.2 Virtual class scheduling
 - ✅ 2.3 AI learning assistant
 - ✅ 2.4 Admin dashboard APIs and UI
+- ✅ 3.1 Deployment config (Render blueprint, Vercel rewrite, cross-site cookie) – see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ### Phase 3 — Polish
 
