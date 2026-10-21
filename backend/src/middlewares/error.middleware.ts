@@ -30,6 +30,11 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     statusCode = 413;
     code = 'PAYLOAD_TOO_LARGE';
     message = 'Request body is too large';
+  } else if (err?.name === 'MulterError') {
+    const tooLarge = err.code === 'LIMIT_FILE_SIZE';
+    statusCode = tooLarge ? 413 : 400;
+    code = tooLarge ? 'FILE_TOO_LARGE' : 'UPLOAD_ERROR';
+    message = tooLarge ? 'File is too large (max 5 MB)' : 'Invalid file upload';
   }
 
   if (statusCode >= 500) {

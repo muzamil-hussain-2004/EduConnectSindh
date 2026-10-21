@@ -52,23 +52,49 @@ model User {
   @@map("users")
 }
 
+enum DocumentType {
+  CNIC_FRONT
+  CNIC_BACK
+  DEGREE
+  OTHER
+}
+
+// The file itself lives on disk (UPLOAD_DIR) under a random name; the DB keeps the metadata.
+model VerificationDocument {
+  id             String       @id @default(uuid())
+  tutorProfileId String
+  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  type           DocumentType
+  storedName     String       @unique
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  createdAt      DateTime     @default(now())
+
+  @@index([tutorProfileId])
+  @@map("verification_documents")
+}
+
 // One profile per tutor. Subjects and areas are many-to-many (Prisma creates the join tables).
 model TutorProfile {
-  id                 String             @id @default(uuid())
-  userId             String             @unique
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String                 @id @default(uuid())
+  userId             String                 @unique
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   headline           String
   bio                String
   qualification      String
-  experienceYears    Int                @default(0)
+  experienceYears    Int                    @default(0)
   hourlyRate         Int // PKR per hour
   teachingMode       TeachingMode
-  isPublished        Boolean            @default(false)
-  verificationStatus VerificationStatus @default(UNVERIFIED)
+  isPublished        Boolean                @default(false)
+  verificationStatus VerificationStatus     @default(UNVERIFIED)
+  verificationNote   String? // admin's reason when REJECTED
+  reviewedAt         DateTime?
+  documents          VerificationDocument[]
   subjects           Subject[]
   areas              Area[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@index([isPublished, verificationStatus])
   @@index([hourlyRate])

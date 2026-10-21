@@ -19,8 +19,8 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 | --------------------------------------------------------------------------- | ---------- |
 | Project foundation (config, logging, errors, security, DB, tests, docs, CI) | ✅ Done    |
 | Authentication and role-based access (student, parent, tutor, admin)        | ✅ Done    |
-| Tutor profiles, subjects, areas, availability                               | 🔜 Planned |
-| Admin-controlled tutor verification (documents stay private)                | 🔜 Planned |
+| Tutor profiles, subjects and areas                                          | ✅ Done    |
+| Admin-controlled tutor verification (documents stay private)                | ✅ Done    |
 | Tutor search and filters (cached in Redis)                                  | 🔜 Planned |
 | Requests, shortlist, matching and recommendations                           | 🔜 Planned |
 | Reviews and ratings with moderation                                         | 🔜 Planned |
@@ -141,22 +141,31 @@ npm run dev                   # API on http://localhost:5000
 
 Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 
-| Method | Path                 | Description                                         | Auth         |
-| ------ | -------------------- | --------------------------------------------------- | ------------ |
-| POST   | `/auth/register`     | Create a student, parent or tutor account           | Public       |
-| POST   | `/auth/login`        | Log in, receive an access token and refresh cookie  | Public       |
-| POST   | `/auth/refresh`      | Rotate the refresh token, get a new access token    | Cookie       |
-| POST   | `/auth/logout`       | Revoke the refresh token                            | Cookie       |
-| PATCH  | `/users/me`          | Update my name / phone                              | Bearer token |
-| POST   | `/users/me/password` | Change password (logs out all devices)              | Bearer token |
-| GET    | `/users`             | List users (pagination, role/status/search filters) | Admin        |
-| PATCH  | `/users/:id/status`  | Suspend or reactivate a user                        | Admin        |
-| GET    | `/tutors/me`         | My tutor profile                                    | Tutor        |
-| PUT    | `/tutors/me`         | Create or replace my tutor profile                  | Tutor        |
-| GET    | `/tutors/:id`        | Public tutor profile (published only)               | Public       |
-| GET    | `/catalog/cities`    | Cities with their areas                             | Public       |
-| GET    | `/catalog/subjects`  | All subjects                                        | Public       |
-| GET    | `/auth/me`           | Current user                                        | Bearer token |
+| Method | Path                                 | Description                                         | Auth          |
+| ------ | ------------------------------------ | --------------------------------------------------- | ------------- |
+| POST   | `/auth/register`                     | Create a student, parent or tutor account           | Public        |
+| POST   | `/auth/login`                        | Log in, receive an access token and refresh cookie  | Public        |
+| POST   | `/auth/refresh`                      | Rotate the refresh token, get a new access token    | Cookie        |
+| POST   | `/auth/logout`                       | Revoke the refresh token                            | Cookie        |
+| PATCH  | `/users/me`                          | Update my name / phone                              | Bearer token  |
+| POST   | `/users/me/password`                 | Change password (logs out all devices)              | Bearer token  |
+| GET    | `/users`                             | List users (pagination, role/status/search filters) | Admin         |
+| PATCH  | `/users/:id/status`                  | Suspend or reactivate a user                        | Admin         |
+| GET    | `/tutors/me`                         | My tutor profile                                    | Tutor         |
+| PUT    | `/tutors/me`                         | Create or replace my tutor profile                  | Tutor         |
+| GET    | `/tutors/:id`                        | Public tutor profile (published only)               | Public        |
+| GET    | `/catalog/cities`                    | Cities with their areas                             | Public        |
+| GET    | `/catalog/subjects`                  | All subjects                                        | Public        |
+| GET    | `/verification/me`                   | My verification status and documents                | Tutor         |
+| POST   | `/verification/documents`            | Upload a CNIC/degree file (JPG, PNG, PDF, max 5 MB) | Tutor         |
+| DELETE | `/verification/documents/:id`        | Delete my document                                  | Tutor         |
+| POST   | `/verification/submit`               | Submit documents for review                         | Tutor         |
+| GET    | `/verification/documents/:id/file`   | Download a document                                 | Owner / Admin |
+| GET    | `/verification/requests`             | List requests (filter by status)                    | Admin         |
+| GET    | `/verification/requests/:id`         | Request details with documents                      | Admin         |
+| POST   | `/verification/requests/:id/approve` | Approve (tutor becomes VERIFIED)                    | Admin         |
+| POST   | `/verification/requests/:id/reject`  | Reject with a reason                                | Admin         |
+| GET    | `/auth/me`                           | Current user                                        | Bearer token  |
 
 ## Security highlights
 

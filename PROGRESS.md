@@ -157,7 +157,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.1 Auth & roles (register, login, JWT access/refresh, RBAC)
 - ✅ 1.2 Users (profile update, change password, admin list + suspend)
 - ✅ 1.3 Tutor profile (+ locations/areas)
-- ⬜ 1.4 Verification (upload docs, admin approve/reject)
+- ✅ 1.4 Verification (upload docs, admin approve/reject)
 - ⬜ 1.5 Search & filters (+ Redis cache)
 - ⬜ 1.6 Requests, shortlist, matching/recommendations
 - ⬜ 1.7 Reviews & ratings (+ moderation)
@@ -194,6 +194,22 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.1      | Auth: register/login/refresh/logout/me, argon2, JWT access + rotating refresh cookie, RBAC; 36 tests                                                                    |
 | 2026-10-21 | 1.2      | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests                                                                |
 | 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests |
+| 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                          |
+
+### Notes: step 1.4 (Verification) explained
+
+- **Why:** the proposal's core promise is _trusted_ tutors. A tutor uploads CNIC (front and back) and a degree, an admin reviews them, and only then does the profile carry the **VERIFIED** badge.
+- **Status flow:** `UNVERIFIED → PENDING → VERIFIED` or `REJECTED → (fix and resubmit) → PENDING`. While `PENDING` or `VERIFIED` the tutor cannot change documents (409), so an admin never reviews files that change underneath them.
+- **Upload security (important for the viva):**
+  - **multer** parses `multipart/form-data`; files are kept in memory with a **5 MB limit**.
+  - The file type is checked by its **magic bytes** (`%PDF-`, PNG and JPEG signatures), not by filename or `Content-Type`, because those are chosen by the uploader. A `.pdf` containing a script is rejected.
+  - The file is saved under a **random UUID name** that we generate, so a malicious filename like `../../x` can never choose where it lands (path traversal). The original name is kept only in the DB for display.
+  - Documents live in `uploads/.private` and are **never served statically**. They can only be fetched through `GET /verification/documents/:id/file`, which checks that you are the owner or an admin. Others get 404, so ids cannot be probed.
+  - Downloads use `Content-Disposition: attachment` and `Cache-Control: no-store`.
+- **DB holds metadata, disk holds the file.** If the DB insert fails, the saved file is removed again. Deleting a user cascades the DB rows, but files need explicit cleanup (the tests do this).
+- **Race safety:** approve/reject use `updateMany ... WHERE status = 'PENDING'`, so two admins cannot decide the same request twice; the second gets 409.
+- **Gotcha:** Express `sendFile` refuses paths containing a dot-folder (like `.private`) unless you pass `dotfiles: 'allow'`.
+- **Later:** on a real server these files should go to object storage (S3-style) instead of local disk; the `documentStorage` helper is the only place that would change.
 
 ### Notes: step 1.3 (Tutor profile) explained
 

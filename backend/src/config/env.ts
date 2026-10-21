@@ -18,6 +18,9 @@ const envSchema = z.object({
   // Optional: if both are set, `npm run db:seed` creates this admin account.
   ADMIN_EMAIL: z.email().optional(),
   ADMIN_PASSWORD: z.string().min(8).optional(),
+
+  // Private verification documents live here (never served statically).
+  UPLOAD_DIR: z.string().default('uploads/.private'),
 });
 
 export type Env = z.infer<typeof envSchema>;

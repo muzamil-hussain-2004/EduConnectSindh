@@ -1,6 +1,7 @@
 import { authPaths, authSchemas } from '../modules/auth/auth.docs';
 import { usersPaths, usersSchemas } from '../modules/users/users.docs';
 import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
+import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
 import { env } from './env';
 
 // Each module will export its own `paths` and we merge them here as we build them.
@@ -18,12 +19,14 @@ export const openApiSpec = {
     { name: 'Auth', description: 'Registration, login, tokens' },
     { name: 'Users', description: 'Profile and admin user management' },
     { name: 'Tutors', description: 'Tutor profiles' },
+    { name: 'Verification', description: 'Tutor document verification and admin review' },
     { name: 'Catalog', description: 'Cities, areas and subjects' },
   ],
   paths: {
     ...authPaths,
     ...usersPaths,
     ...tutorsPaths,
+    ...verificationPaths,
     '/health': {
       get: {
         tags: ['System'],
@@ -57,6 +60,7 @@ export const openApiSpec = {
       ...authSchemas,
       ...usersSchemas,
       ...tutorsSchemas,
+      ...verificationSchemas,
       Health: {
         type: 'object',
         properties: {
