@@ -37,6 +37,23 @@ Create a Redis database and copy the **`rediss://...`** URL (double `s` = TLS). 
 
 Start command runs `prisma migrate deploy` each boot so the schema is always up to date.
 
+## 3b. Hugging Face Space (API without a credit card)
+
+Render's free tier may ask for a card. A Hugging Face Docker Space is a card-free alternative.
+
+1. Create a free account at huggingface.co → **New → Space**. Name `educonnect-api`, SDK **Docker**
+   (blank template), visibility **Public**.
+2. Upload two files from [deploy/huggingface/](../deploy/huggingface) to the Space (Files → Add file):
+   `Dockerfile` and `README.md`. The Dockerfile clones this GitHub repo, builds the backend,
+   runs `prisma migrate deploy` and starts the API on port 7860.
+3. Space → **Settings → Variables and secrets** → add **Secrets**: `DATABASE_URL`, `REDIS_URL`,
+   `CLIENT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (and optionally `AI_API_KEY`,
+   `AI_BASE_URL`, `AI_MODEL`). `NODE_ENV`, `PORT` and `COOKIE_SAME_SITE` are already set in the image.
+4. The Space builds automatically (about 5 minutes). Your API URL is
+   `https://<username>-educonnect-api.hf.space`; check `/health`.
+5. Use that URL in Vercel (`VITE_API_URL=<url>/api/v1`, `VITE_SOCKET_URL=<url>`).
+6. To deploy new code: push to GitHub, then Space → Settings → **Factory rebuild**.
+
 ## 4. Vercel (frontend)
 
 1. Add New Project → import the repo → **Root Directory: `frontend`**.
