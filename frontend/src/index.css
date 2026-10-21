@@ -1,16 +1,27 @@
 @import 'tailwindcss';
 
+/* Tokens taken from the E-Tutor style guide (Figma). */
 @theme {
-  --color-brand-50: #e8f6f6;
-  --color-brand-100: #d2eeee;
-  --color-brand-300: #92d6d5;
-  --color-brand-500: #47babb;
-  --color-brand-600: #3aa5a6;
-  --color-brand-700: #2f8586;
-  --color-canvas: #fdfdfd;
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #fff7f4;
+  --color-brand-100: #ffeee8;
+  --color-brand-200: #ffddd2;
+  --color-brand-300: #ffcdbc;
+  --color-brand-500: #ff6636;
+  --color-brand-600: #e65c30;
+  --color-brand-700: #cc522b;
+  --color-accent-100: #ebebff;
+  --color-accent-500: #564ffd;
+  --color-ink: #1d2026;
+  --color-ink-soft: #4e5566;
+  --color-muted: #6e7485;
+  --color-line: #e9eaf0;
+  --color-surface: #f5f7fa;
+  --color-success: #23bd33;
+  --color-warning: #fd8e1f;
+  --color-danger: #e34444;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  @apply bg-canvas text-slate-900 antialiased;
+  @apply bg-white text-ink antialiased;
 }

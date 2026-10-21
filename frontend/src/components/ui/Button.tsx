@@ -2,34 +2,51 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 import { Spinner } from './Spinner';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+type Variant = 'primary' | 'outline' | 'soft' | 'ghost' | 'danger';
+type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-brand-500 text-white hover:bg-brand-600',
-  secondary: 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-100',
-  ghost: 'text-slate-700 hover:bg-slate-100',
+  outline: 'border border-brand-500 text-brand-500 hover:bg-brand-50',
+  soft: 'bg-brand-100 text-brand-500 hover:bg-brand-200',
+  ghost: 'text-ink-soft hover:bg-surface',
+  danger: 'bg-danger text-white hover:opacity-90',
 };
 
-interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
+const sizes: Record<Size, string> = {
+  sm: 'h-9 px-4 text-sm',
+  md: 'h-11 px-5 text-sm',
+  lg: 'h-12 px-6 text-base',
+};
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
+  size?: Size;
   loading?: boolean;
 }
 
+export const buttonClass = (variant: Variant = 'primary', size: Size = 'md', extra?: string) =>
+  cn(
+    'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60',
+    variants[variant],
+    sizes[size],
+    extra,
+  );
+
 export function Button({
-  variant = 'primary',
+  variant,
+  size,
   loading,
   className,
   children,
   disabled,
+  type = 'button',
   ...rest
-}: Props) {
+}: ButtonProps) {
   return (
     <button
-      className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60',
-        variants[variant],
-        className,
-      )}
+      type={type}
+      className={buttonClass(variant, size, className)}
       disabled={disabled || loading}
       {...rest}
     >

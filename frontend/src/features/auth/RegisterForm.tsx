@@ -48,7 +48,7 @@ export function RegisterForm() {
       subline="Join students and parents across Sindh"
     >
       <h1 className="sr-only">Create your account</h1>
-      <p className="mb-6 text-sm text-slate-600">Find or become a verified tutor in Sindh.</p>
+      <p className="mb-6 text-sm text-ink-soft">Find or become a verified tutor in Sindh.</p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <fieldset>
           <legend className="mb-2 text-sm font-medium">I am a</legend>
@@ -56,7 +56,7 @@ export function RegisterForm() {
             {ROLES.map((r) => (
               <label
                 key={r.value}
-                className="cursor-pointer rounded-full border border-brand-500 px-3 py-2 text-center text-sm has-checked:bg-brand-500 has-checked:text-white"
+                className="cursor-pointer rounded-md border border-brand-500 px-3 py-2 text-center text-sm has-checked:bg-brand-500 has-checked:text-white"
               >
                 <input type="radio" value={r.value} className="sr-only" {...register('role')} />
                 {r.label}

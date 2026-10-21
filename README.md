@@ -126,6 +126,8 @@ npm run dev                   # http://localhost:5173 (proxies /api to the backe
 
 Other scripts: `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`. See [docs/FRONTEND.md](./docs/FRONTEND.md) for structure and flow.
 
+**Frontend features:** home, tutor search with filters (URL-based; sidebar on desktop, sheet on mobile), tutor profile with reviews and request form, student/parent dashboard (requests, shortlist), tutor dashboard (incoming requests, profile editor, verification upload), admin screens (verification queue, review moderation), and live notifications via Socket.IO. Design follows the E-Tutor Figma (orange `#FF6636`, Inter) and is responsive down to 360px.
+
 ### Useful URLs
 
 | URL                            | What                              |

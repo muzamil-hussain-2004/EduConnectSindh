@@ -35,7 +35,7 @@ export function LoginForm() {
       subline="Pick up right where you left off"
     >
       <h1 className="sr-only">Log in</h1>
-      <p className="mb-6 text-sm text-slate-600">
+      <p className="mb-6 text-sm text-ink-soft">
         Log in to find tutors, manage your requests and keep learning.
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>

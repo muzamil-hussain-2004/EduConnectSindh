@@ -68,6 +68,35 @@ LoginForm (React Hook Form + Zod validate in browser)
 
 `npm run dev` (port 5173), `build`, `test`, `typecheck`, `lint`, `format`. The backend must run on port 5000.
 
-## 7. Next frontend steps
+## 7. Pages and routes
 
-F2 tutor search and profile pages; F3 requests, shortlist and the notification bell (Socket.IO); F4 tutor dashboard and verification upload; F5 admin screens.
+| Route                                              | Who             | What                                                  |
+| -------------------------------------------------- | --------------- | ----------------------------------------------------- |
+| `/`                                                | everyone        | Hero search, subjects, top-rated tutors, how it works |
+| `/tutors`                                          | everyone        | Search with filters, sort, pagination                 |
+| `/tutors/:id`                                      | everyone        | Profile, reviews, "Send request" (students/parents)   |
+| `/login`, `/register`                              | guests          | Auth                                                  |
+| `/dashboard`                                       | signed in       | Role-aware overview                                   |
+| `/dashboard/requests`, `/shortlist`                | student, parent | Sent requests (cancel), saved tutors                  |
+| `/dashboard/incoming`, `/profile`, `/verification` | tutor           | Accept/decline, edit profile, upload documents        |
+| `/dashboard/admin/verification`, `/admin/reviews`  | admin           | Approve/reject tutors, hide/restore reviews           |
+| `/dashboard/notifications`                         | signed in       | Notification list, mark read                          |
+
+## 8. Data flow (example: sending a request)
+
+1. `SendRequestModal` calls `useCreateRequestMutation` (`features/requests/requestsApi.ts`).
+2. RTK Query sends `POST /api/v1/requests` with the Bearer token (auto-refreshed on 401).
+3. On success the `Requests` tag is invalidated, so "My requests" refetches.
+4. The tutor's browser receives a Socket.IO `notification` event, shows a toast and invalidates `Notifications`, so the bell badge updates without a reload.
+
+## 9. Design system
+
+Tokens live in `src/index.css` (`@theme`): `brand-*` orange (`#FF6636`), `accent` purple, `ink`/`muted` greys, `line`, `surface`, status colours, font Inter. Reusable pieces are in `components/ui` (Button, Input/Select/Textarea, Badge, Card, Modal, Feedback) and `components/tutors` (TutorCard, TutorFilters, status badges). Use these instead of ad-hoc classes so the look stays consistent.
+
+## 10. Responsive behaviour
+
+Mobile first: layouts are single column and grow at `sm` (640px), `md` (768px) and `lg` (1024px). Filters move from sidebar to a sheet below `lg`; the navbar collapses below `md`; the dashboard sidebar becomes horizontally scrollable tabs below `lg`. Every public page was checked at 390px and 1440px for horizontal overflow.
+
+## 11. Next frontend steps
+
+Phase 2 UI (courses, virtual classes, AI assistant) once the backend APIs exist, then deployment.

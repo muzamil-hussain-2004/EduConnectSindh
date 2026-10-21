@@ -18,6 +18,8 @@ export function toTutorDto(profile: TutorProfileWithRelations) {
     teachingMode: profile.teachingMode,
     isPublished: profile.isPublished,
     verificationStatus: profile.verificationStatus,
+    ratingAvg: profile.ratingAvg,
+    ratingCount: profile.ratingCount,
     subjects: profile.subjects,
     areas: profile.areas,
     createdAt: profile.createdAt,
