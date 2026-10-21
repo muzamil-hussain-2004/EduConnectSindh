@@ -142,7 +142,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 0.4 `npm init`, install TypeScript, `tsconfig.json` (strict), `tsx` for dev
 - ✅ 0.5 ESLint + Prettier + Husky + lint-staged
 - ✅ 0.6 `docker-compose.yml` (Postgres + Redis) and `.env.example`
-- ⬜ 0.7 Env validation with Zod (`config/env.ts`)
+- ✅ 0.7 Env validation with Zod (`config/env.ts`)
 - ⬜ 0.8 Pino logger, `app.ts` / `server.ts`, `/health` endpoint
 - ⬜ 0.9 Global error handler + `AppError` + async wrapper
 - ⬜ 0.10 Security middlewares (helmet, cors, rate-limit)
@@ -178,6 +178,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-18 | 0.3, 0.4 | Git repo at project root; TypeScript + tsx; scripts `dev`, `build`, `start`, `typecheck` verified |
 | 2026-10-18 | 0.5 | ESLint 10, Prettier, Husky, lint-staged; TypeScript pinned to 6.0; first commit |
 | 2026-10-21 | 0.6 | Docker Compose: Postgres 16 (host port 5433) + Redis 7; `.env.example`; npm `docker:*` scripts |
+| 2026-10-21 | 0.7 | Zod env validation in `src/config/env.ts` (+ dotenv); fails fast on bad config |
 
 ### Notes: steps 0.3 and 0.4 explained
 
@@ -227,6 +228,21 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
   - `npm run docker:logs`: follow the logs.
   - `docker compose down -v`: stop and **delete all data**.
 - **Check it works:** `docker ps` should show both as `healthy`. `docker exec educonnect-redis redis-cli ping` should answer `PONG`.
+
+### Notes: step 0.7 explained (environment validation)
+
+- **Problem:** everything in `process.env` is an untyped string that might be missing or wrong. Bugs from bad config appear far from their cause.
+- **Solution, "fail fast":** [env.ts](backend/src/config/env.ts) defines a **Zod schema** describing each variable (type, range, default). At startup it validates `process.env`; if anything is invalid it prints every problem and exits.
+- **What each piece does:**
+  - `dotenv/config` loads `backend/.env` into `process.env`.
+  - `z.coerce.number()` turns the string `"5000"` into the number `5000`.
+  - `.default(...)` supplies a value when the variable is absent.
+  - `.min(32)` on JWT secrets rejects weak or placeholder secrets.
+  - `z.infer<typeof envSchema>` gives a TypeScript type for free, so `env.PORT` is a `number` and autocompletes.
+- **Rule for the whole project:** never read `process.env` directly. Always `import { env } from './config/env'`.
+- **Adding a variable later:** add it to the schema, to `.env.example` and to your `.env`.
+- We tested three cases: placeholder secrets (rejected), a valid `.env` (accepted), `PORT=abc` (rejected).
+- Your local `.env` now has real random JWT secrets (generated with Node's `crypto`).
 
 ---
 
