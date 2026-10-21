@@ -1,5 +1,6 @@
 import type { Role } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
+import { searchCache } from '../search/search.cache';
 import { detectFileType } from '../../shared/utils/fileType';
 import { documentStorage } from './document.storage';
 import { verificationRepository } from './verification.repository';
@@ -181,6 +182,7 @@ export const verificationService = {
     if ((await verificationRepository.decide(tutorId, 'PENDING', to, note)) === 0) {
       throw AppError.conflict('This request is not pending review');
     }
+    await searchCache.invalidate();
     return this.getRequest(tutorId);
   },
 };

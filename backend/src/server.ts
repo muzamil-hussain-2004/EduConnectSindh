@@ -3,9 +3,12 @@ import { createApp } from './app';
 import { prisma } from './config/database';
 import { env } from './config/env';
 import { logger } from './config/logger';
+import { connectRedis, disconnectRedis } from './config/redis';
 
 const app = createApp();
 const server = http.createServer(app);
+
+void connectRedis();
 
 server.listen(env.PORT, () => {
   logger.info(`EduConnect API running on http://localhost:${env.PORT} (${env.NODE_ENV})`);
@@ -16,6 +19,7 @@ function shutdown(signal: string) {
   logger.info(`${signal} received, shutting down`);
   server.close(async () => {
     await prisma.$disconnect();
+    await disconnectRedis();
     process.exit(0);
   });
   setTimeout(() => process.exit(1), 10_000).unref();

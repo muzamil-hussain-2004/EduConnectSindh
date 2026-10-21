@@ -1,5 +1,6 @@
 import { authPaths, authSchemas } from '../modules/auth/auth.docs';
 import { usersPaths, usersSchemas } from '../modules/users/users.docs';
+import { searchPaths, searchSchemas } from '../modules/search/search.docs';
 import { tutorsPaths, tutorsSchemas } from '../modules/tutors/tutors.docs';
 import { verificationPaths, verificationSchemas } from '../modules/verification/verification.docs';
 import { env } from './env';
@@ -19,6 +20,7 @@ export const openApiSpec = {
     { name: 'Auth', description: 'Registration, login, tokens' },
     { name: 'Users', description: 'Profile and admin user management' },
     { name: 'Tutors', description: 'Tutor profiles' },
+    { name: 'Search', description: 'Tutor discovery with filters (Redis cached)' },
     { name: 'Verification', description: 'Tutor document verification and admin review' },
     { name: 'Catalog', description: 'Cities, areas and subjects' },
   ],
@@ -26,6 +28,7 @@ export const openApiSpec = {
     ...authPaths,
     ...usersPaths,
     ...tutorsPaths,
+    ...searchPaths,
     ...verificationPaths,
     '/health': {
       get: {
@@ -60,6 +63,7 @@ export const openApiSpec = {
       ...authSchemas,
       ...usersSchemas,
       ...tutorsSchemas,
+      ...searchSchemas,
       ...verificationSchemas,
       Health: {
         type: 'object',

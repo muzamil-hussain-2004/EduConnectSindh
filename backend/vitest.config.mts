@@ -3,6 +3,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
+    // Test files share one database and one Redis, and the cache tests read a global counter.
+    fileParallelism: false,
     include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
     // Defaults let tests run on a fresh clone / CI without a .env file.
     env: {

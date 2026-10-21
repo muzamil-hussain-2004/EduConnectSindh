@@ -158,7 +158,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.2 Users (profile update, change password, admin list + suspend)
 - ✅ 1.3 Tutor profile (+ locations/areas)
 - ✅ 1.4 Verification (upload docs, admin approve/reject)
-- ⬜ 1.5 Search & filters (+ Redis cache)
+- ✅ 1.5 Search & filters (+ Redis cache)
 - ⬜ 1.6 Requests, shortlist, matching/recommendations
 - ⬜ 1.7 Reviews & ratings (+ moderation)
 - ⬜ 1.8 Notifications (BullMQ + Socket.IO)
@@ -195,6 +195,21 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.2      | Users: update profile, change password, admin list (pagination/filters) and suspend/reactivate; 51 tests                                                                |
 | 2026-10-21 | 1.3      | Tutor profile: `tutor_profiles` table (+ subject/area join tables), `GET/PUT /tutors/me`, public `GET /tutors/:id`, `/catalog/cities` and `/catalog/subjects`; 69 tests |
 | 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                          |
+| 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                             |
+
+### Notes: step 1.5 (Search + Redis) explained
+
+- **Endpoint:** `GET /api/v1/tutors?q=physics&subjectId=..&areaId=..&mode=HOME&minRate=500&maxRate=1500&minExperience=2&verifiedOnly=true&sort=priceAsc&page=1&limit=12`. Every filter is optional and validated with Zod (bad values give 400, `limit` max 50).
+- **Always filtered:** only `isPublished` tutors whose user account is `ACTIVE` appear. Contact details and the full bio are never in list results.
+- **Mode logic:** `mode=HOME` matches tutors who teach HOME **or** BOTH (same for ONLINE).
+- **Stable sorting:** every sort adds `id` as a tie-breaker, otherwise pages could repeat or skip rows when values are equal.
+- **What is Redis here?** An in-memory key-value store, much faster than PostgreSQL for repeated reads. Search is the busiest public endpoint, so we use the **cache-aside** pattern: check Redis, on a miss query PostgreSQL and store the result with a **60 s TTL**.
+- **Invalidation (the hard part of caching):** instead of finding and deleting keys, every key contains a version number (`cache:tutor-search:v73:<hash of the query>`). When something visible in search changes (tutor saves profile, admin approves/rejects, user suspended/reactivated) we `INCR` the version, so old keys are instantly unreachable and expire by themselves.
+- **Same query, same key:** the query object is serialised with sorted keys and hashed (SHA-1), so `?a=1&b=2` and `?b=2&a=1` share one entry.
+- **Fail-open:** the Redis client uses `enableOfflineQueue: false` and `maxRetriesPerRequest: 1`, so if Redis is down requests fail fast and the API answers from PostgreSQL (tested). A cache must never be able to take the site down.
+- **Measured:** first request ~640 ms (cold DB connection), repeat ~10 ms.
+- **Tests:** `fileParallelism: false` in `vitest.config.mts`, because test files share one database and Redis, and the cache tests read the global version counter.
+- **Not yet:** filtering/sorting by rating comes with Reviews (step 1.7). Postgres `ILIKE` is fine at this scale; full-text search or trigram indexes can come later if needed.
 
 ### Notes: step 1.4 (Verification) explained
 

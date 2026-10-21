@@ -1,5 +1,6 @@
 import type { User, UserStatus } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
+import { searchCache } from '../search/search.cache';
 import { hashPassword, verifyPassword } from '../../shared/utils/password';
 import { authRepository } from '../auth/auth.repository';
 import type { CreateUserData } from './users.repository';
@@ -69,6 +70,7 @@ export const usersService = {
 
     const updated = await usersRepository.update(targetId, { status });
     if (status === 'SUSPENDED') await authRepository.revokeAllForUser(targetId);
+    await searchCache.invalidate();
     return toPublicUser(updated);
   },
 };

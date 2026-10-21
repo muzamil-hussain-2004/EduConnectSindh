@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { searchCache } from '../search/search.cache';
 import type { TutorProfileWithRelations } from './tutors.repository';
 import { tutorsRepository } from './tutors.repository';
 import type { UpsertTutorProfileInput } from './tutors.schema';
@@ -49,7 +50,9 @@ export const tutorsService = {
       throw AppError.badRequest('Choose at least one area to publish a home-tutoring profile');
     }
 
-    return toTutorDto(await tutorsRepository.upsert(userId, fields, uniqueSubjects, uniqueAreas));
+    const saved = await tutorsRepository.upsert(userId, fields, uniqueSubjects, uniqueAreas);
+    await searchCache.invalidate();
+    return toTutorDto(saved);
   },
 
   // Public: unpublished profiles look like they do not exist.
