@@ -27,7 +27,6 @@ export function createApp() {
   app.use(apiLimiter);
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
-  app.use(cookieParser());
 
   // Interactive API docs; hidden in production.
   if (!isProduction) {

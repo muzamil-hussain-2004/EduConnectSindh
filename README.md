@@ -23,14 +23,14 @@ EduConnect Sindh connects students and parents with verified local tutors, and a
 | Admin-controlled tutor verification (documents stay private)                | ✅ Done    |
 | Tutor search and filters (cached in Redis)                                  | ✅ Done    |
 | Requests, shortlist, matching and recommendations                           | ✅ Done    |
-| Reviews and ratings with moderation                                         | 🔜 Planned |
+| Reviews and ratings with moderation                                         | ✅ Done    |
 | Notifications (real-time with Socket.IO)                                    | 🔜 Planned |
 | Courses, lessons, enrollment, progress                                      | 🔜 Planned |
 | Virtual class scheduling                                                    | 🔜 Planned |
 | AI learning assistant                                                       | 🔜 Planned |
 | Admin dashboard APIs                                                        | 🔜 Planned |
 
-Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.md)**.
+Detailed progress, with explanations of every step: **[PROGRESS.md](./PROGRESS.md)**. How the code and data flow: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
 
 ## Tech stack
 
@@ -165,6 +165,12 @@ Base path: `/api/v1`. Full interactive reference at `/api/docs`.
 | GET    | `/shortlist`                         | My saved tutors                                         | Student/Parent |
 | PUT    | `/shortlist/:id`                     | Save a tutor (idempotent)                               | Student/Parent |
 | DELETE | `/shortlist/:id`                     | Remove a saved tutor                                    | Student/Parent |
+| GET    | `/tutors/:id/reviews`                | Visible reviews of a tutor                              | Public        |
+| PUT    | `/tutors/:id/reviews`                | Create or edit my review (needs accepted request)       | Student/Parent |
+| DELETE | `/tutors/:id/reviews`                | Delete my review                                        | Student/Parent |
+| GET    | `/reviews`                           | Moderation queue                                        | Admin         |
+| POST   | `/reviews/:id/hide`                  | Hide a review                                           | Admin         |
+| POST   | `/reviews/:id/unhide`                | Restore a review                                        | Admin         |
 | GET    | `/catalog/cities`                    | Cities with their areas                                 | Public        |
 | GET    | `/catalog/subjects`                  | All subjects                                            | Public        |
 | GET    | `/verification/me`                   | My verification status and documents                    | Tutor         |

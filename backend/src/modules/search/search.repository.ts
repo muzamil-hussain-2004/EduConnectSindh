@@ -7,6 +7,7 @@ const orderBy: Record<SearchTutorsQuery['sort'], Prisma.TutorProfileOrderByWithR
   priceAsc: [{ hourlyRate: 'asc' }, { id: 'asc' }],
   priceDesc: [{ hourlyRate: 'desc' }, { id: 'asc' }],
   experience: [{ experienceYears: 'desc' }, { id: 'asc' }],
+  rating: [{ ratingAvg: 'desc' }, { ratingCount: 'desc' }, { id: 'asc' }],
 };
 
 function buildWhere(q: SearchTutorsQuery): Prisma.TutorProfileWhereInput {
@@ -22,6 +23,7 @@ function buildWhere(q: SearchTutorsQuery): Prisma.TutorProfileWhereInput {
     ...(q.mode ? { teachingMode: { in: [q.mode, 'BOTH'] } } : {}),
     ...(Object.keys(rate).length > 0 ? { hourlyRate: rate } : {}),
     ...(q.minExperience !== undefined ? { experienceYears: { gte: q.minExperience } } : {}),
+    ...(q.minRating !== undefined ? { ratingAvg: { gte: q.minRating } } : {}),
     ...(q.subjectId ? { subjects: { some: { id: q.subjectId } } } : {}),
     ...(q.areaId ? { areas: { some: { id: q.areaId } } } : {}),
     ...(q.q
@@ -54,6 +56,8 @@ export const searchRepository = {
           hourlyRate: true,
           teachingMode: true,
           verificationStatus: true,
+          ratingAvg: true,
+          ratingCount: true,
           user: { select: { fullName: true } },
           subjects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
           areas: { select: { id: true, name: true }, orderBy: { name: 'asc' } },

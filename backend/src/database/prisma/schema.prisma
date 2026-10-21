@@ -48,6 +48,7 @@ model User {
   refreshTokens RefreshToken[]
   tutorProfile  TutorProfile?
   shortlist     ShortlistItem[]
+  reviews       Review[]
   requests      TutorRequest[]
 
   @@index([role])
@@ -95,6 +96,10 @@ model TutorProfile {
   documents          VerificationDocument[]
   shortlistedBy      ShortlistItem[]
   requests           TutorRequest[]
+  reviews            Review[]
+  // Denormalized from visible reviews so search can sort/filter without joins.
+  ratingAvg          Float                  @default(0)
+  ratingCount        Int                    @default(0)
   subjects           Subject[]
   areas              Area[]
   createdAt          DateTime               @default(now())
@@ -102,7 +107,32 @@ model TutorProfile {
 
   @@index([isPublished, verificationStatus])
   @@index([hourlyRate])
+  @@index([ratingAvg])
   @@map("tutor_profiles")
+}
+
+enum ReviewStatus {
+  VISIBLE
+  HIDDEN
+}
+
+// One review per author per tutor. Only people with an ACCEPTED request may write one.
+model Review {
+  id             String       @id @default(uuid())
+  tutorProfileId String
+  tutorProfile   TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  rating         Int
+  comment        String
+  status         ReviewStatus @default(VISIBLE)
+  moderationNote String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([authorId, tutorProfileId])
+  @@index([tutorProfileId, status, createdAt])
+  @@map("reviews")
 }
 
 // Only a hash of the refresh token is stored, so a DB leak cannot be used to log in.

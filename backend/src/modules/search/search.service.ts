@@ -18,6 +18,8 @@ export const searchService = {
           hourlyRate: t.hourlyRate,
           teachingMode: t.teachingMode,
           verificationStatus: t.verificationStatus,
+          ratingAvg: t.ratingAvg,
+          ratingCount: t.ratingCount,
           subjects: t.subjects,
           areas: t.areas,
         })),

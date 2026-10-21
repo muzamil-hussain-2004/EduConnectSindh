@@ -160,7 +160,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 1.4 Verification (upload docs, admin approve/reject)
 - ✅ 1.5 Search & filters (+ Redis cache)
 - ✅ 1.6 Requests, shortlist, matching/recommendations
-- ⬜ 1.7 Reviews & ratings (+ moderation)
+- ✅ 1.7 Reviews & ratings (+ moderation)
 - ⬜ 1.8 Notifications (BullMQ + Socket.IO)
 
 ### Phase 2 — Learning platform
@@ -197,6 +197,17 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 | 2026-10-21 | 1.4      | Verification: private document upload (multer, magic-byte check, 5 MB), submit, admin approve/reject with reason, protected download; 85 tests                          |
 | 2026-10-21 | 1.5      | Search: `GET /tutors` with filters, sorting, pagination; Redis cache (60 s, version-key invalidation, fail-open); 105 tests                                             |
 | 2026-10-21 | 1.6      | Requests (send, accept, decline, cancel), shortlist, scored recommendations; contact shared only after accept; 117 tests |
+| 2026-10-21 | 1.7      | Reviews: accepted-request-only, one per author, admin hide/unhide, cached ratingAvg/ratingCount, search `minRating` + `sort=rating`; 124 tests; added `docs/ARCHITECTURE.md` |
+
+### Notes: step 1.7 (Reviews and ratings) explained
+
+- **Who can review:** only a student or parent whose request to that tutor was `ACCEPTED`. This blocks fake reviews from strangers.
+- **One per author per tutor:** `@@unique([authorId, tutorProfileId])`. `PUT /tutors/:id/reviews` is an upsert, so sending it again edits your review.
+- **Cached rating:** `TutorProfile.ratingAvg` and `ratingCount` are updated in the **same transaction** as every review write, so search can filter and sort without aggregating all reviews each time. The average is rounded to one decimal.
+- **Moderation:** admin `POST /reviews/:id/hide` (with an optional note) removes the review from the public list and the average; `unhide` restores it. Editing a hidden review does not unhide it, so authors cannot bypass moderation.
+- **Privacy:** the public list shows author name, rating and comment only. `moderationNote` and `status` are for admins.
+- **Search:** results now include `ratingAvg` and `ratingCount`, plus `minRating` filter and `sort=rating` (ties broken by review count, then id). Every review change invalidates the search cache.
+- **Not yet:** `GET /tutors/:id` does not include the rating; the frontend can combine it with the search summary or we can add it later.
 
 ### Notes: step 1.6 (Requests, shortlist, recommendations) explained
 

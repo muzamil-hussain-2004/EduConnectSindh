@@ -15,8 +15,9 @@ export const searchTutorsQuerySchema = z
     minRate: z.coerce.number().int().min(0).optional(),
     maxRate: z.coerce.number().int().min(0).optional(),
     minExperience: z.coerce.number().int().min(0).max(60).optional(),
+    minRating: z.coerce.number().min(1).max(5).optional(),
     verifiedOnly: optionalBool,
-    sort: z.enum(['newest', 'priceAsc', 'priceDesc', 'experience']).default('newest'),
+    sort: z.enum(['newest', 'priceAsc', 'priceDesc', 'experience', 'rating']).default('newest'),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(50).default(12),
   })
