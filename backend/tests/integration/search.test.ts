@@ -20,7 +20,7 @@ const tutors: Record<string, { token: string; tutorId: string; userId: string }>
 async function createTutor(
   key: string,
   profile: Record<string, unknown>,
-  fullName = `Tutor ${key}`,
+  fullName = `${marker} Tutor ${key}`,
 ) {
   const reg = await request(app)
     .post('/api/v1/auth/register')
@@ -133,6 +133,11 @@ describe('GET /api/v1/tutors (search)', () => {
   it('searches text in the tutor name (case-insensitive)', async () => {
     const res = await request(app).get('/api/v1/tutors').query({ q: 'TUTOR CHEAP' });
     expect(ids(res)).toContain(tutors.cheap?.tutorId);
+  });
+
+  it('does not match words that only appear in the bio or headline', async () => {
+    const res = await request(app).get('/api/v1/tutors').query({ q: 'exam preparation' });
+    expect(ids(res)).not.toContain(tutors.cheap?.tutorId);
   });
 
   it('paginates', async () => {

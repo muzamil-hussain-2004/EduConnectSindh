@@ -29,8 +29,6 @@ function buildWhere(q: SearchTutorsQuery): Prisma.TutorProfileWhereInput {
     ...(q.q
       ? {
           OR: [
-            { headline: { contains: q.q, mode: 'insensitive' } },
-            { bio: { contains: q.q, mode: 'insensitive' } },
             { user: { fullName: { contains: q.q, mode: 'insensitive' } } },
             { subjects: { some: { name: { contains: q.q, mode: 'insensitive' } } } },
           ],
