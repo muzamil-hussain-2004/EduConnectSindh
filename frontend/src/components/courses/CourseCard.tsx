@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Badge } from '@/components/ui/Badge';
 import type { Course, CourseLevel } from '@/features/courses/coursesApi';
 import { formatPkr } from '@/lib/format';
+import { subjectPhoto } from '@/lib/subjectPhoto';
 
 export const LEVEL_LABEL: Record<CourseLevel, string> = {
   BEGINNER: 'Beginner',
@@ -33,8 +34,18 @@ export function ProgressBar({ percent }: { percent: number }) {
 }
 
 export function CourseCard({ course, to }: { course: Course; to?: string }) {
+  const photo = subjectPhoto(course.subject.name);
   return (
-    <article className="relative flex flex-col rounded-md border border-line bg-white p-4 transition hover:shadow-md">
+    <article className="lift relative flex flex-col overflow-hidden rounded-md border border-line bg-white p-4">
+      {photo && (
+        <img
+          src={photo}
+          alt=""
+          loading="lazy"
+          className="-mx-4 -mt-4 mb-3 h-32 max-w-none object-cover"
+          style={{ width: 'calc(100% + 2rem)' }}
+        />
+      )}
       <div className="flex items-center justify-between gap-2">
         <Badge tone="brand">{course.subject.name}</Badge>
         <Badge>{LEVEL_LABEL[course.level]}</Badge>

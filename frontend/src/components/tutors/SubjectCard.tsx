@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Link } from 'react-router';
+import { subjectPhoto } from '@/lib/subjectPhoto';
 
 const ICONS: [RegExp, LucideIcon][] = [
   [/math|algebra|calcul|stat/i, Calculator],
@@ -43,6 +44,7 @@ const iconFor = (name: string) => ICONS.find(([re]) => re.test(name))?.[1] ?? Bo
 export function SubjectCard({ id, name, index }: { id: string; name: string; index: number }) {
   const Icon = iconFor(name);
   const [from, to] = GRADIENTS[index % GRADIENTS.length] as [string, string];
+  const photo = subjectPhoto(name);
 
   return (
     <Link
@@ -54,9 +56,20 @@ export function SubjectCard({ id, name, index }: { id: string; name: string; ind
         className="relative grid h-36 place-items-center overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
       >
-        <span className="absolute -top-6 -right-6 size-28 rounded-full bg-white/15" />
-        <span className="absolute -bottom-8 -left-4 size-24 rounded-full bg-white/10" />
-        <Icon className="size-16 text-white/90 transition-transform duration-300 group-hover:scale-110" />
+        {photo ? (
+          <img
+            src={photo}
+            alt={name}
+            loading="lazy"
+            className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <>
+            <span className="absolute -top-6 -right-6 size-28 rounded-full bg-white/15" />
+            <span className="absolute -bottom-8 -left-4 size-24 rounded-full bg-white/10" />
+            <Icon className="size-16 text-white/90 transition-transform duration-300 group-hover:scale-110" />
+          </>
+        )}
       </div>
       <div className="p-4">
         <h3 className="text-lg font-bold">{name}</h3>
