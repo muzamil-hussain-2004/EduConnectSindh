@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Upload } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -14,10 +14,12 @@ import {
   useCreateCourseMutation,
   useDeleteCourseMutation,
   useDeleteLessonMutation,
+  useDeleteMaterialMutation,
   useGetCourseManageQuery,
   useSetCoursePublishedMutation,
   useUpdateCourseMutation,
   useUpdateLessonMutation,
+  useUploadMaterialMutation,
   type CourseLevel,
   type CourseManage,
   type LessonFull,
@@ -106,6 +108,66 @@ function CourseForm({ course }: { course?: CourseManage }) {
   );
 }
 
+function MaterialsEditor({ courseId, lesson }: { courseId: string; lesson: LessonFull }) {
+  const [upload, { isLoading }] = useUploadMaterialMutation();
+  const [remove] = useDeleteMaterialMutation();
+
+  const onPick = async (file?: File) => {
+    if (!file) return;
+    try {
+      await upload({ courseId, lessonId: lesson.id, file }).unwrap();
+      toast.success('File attached');
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  };
+
+  return (
+    <div className="mt-5 space-y-2 border-t border-line pt-4">
+      <p className="text-sm font-semibold">Slides &amp; materials</p>
+      <p className="text-xs text-muted">
+        PDF, JPG/PNG or .txt up to 15 MB. Export PowerPoint to PDF. Only enrolled students can read
+        them, and the AI assistant answers from the text in your PDFs.
+      </p>
+      <ul className="space-y-1">
+        {lesson.materials.map((m) => (
+          <li
+            key={m.id}
+            className="flex items-center justify-between gap-2 rounded-md bg-surface px-3 py-2 text-sm"
+          >
+            <span className="truncate">{m.originalName}</span>
+            <button
+              type="button"
+              aria-label={`Remove ${m.originalName}`}
+              className="text-muted hover:text-danger"
+              onClick={() =>
+                remove({ courseId, lessonId: lesson.id, materialId: m.id })
+                  .unwrap()
+                  .catch((e) => toast.error(getErrorMessage(e)))
+              }
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-line px-3 py-2 text-sm hover:bg-surface">
+        <Upload className="size-4" /> {isLoading ? 'Uploading...' : 'Attach a file'}
+        <input
+          type="file"
+          hidden
+          accept="application/pdf,image/png,image/jpeg,.txt,.md"
+          disabled={isLoading}
+          onChange={(e) => {
+            void onPick(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+      </label>
+    </div>
+  );
+}
+
 function LessonModal({
   courseId,
   lesson,
@@ -176,6 +238,13 @@ function LessonModal({
           Save lesson
         </Button>
       </form>
+      {lesson ? (
+        <MaterialsEditor courseId={courseId} lesson={lesson} />
+      ) : (
+        <p className="mt-4 rounded-md bg-surface p-3 text-xs text-muted">
+          Save the lesson first, then edit it to attach slides (PDF) and handouts.
+        </p>
+      )}
     </Modal>
   );
 }
@@ -275,7 +344,7 @@ function Builder({ course }: { course: CourseManage }) {
         <LessonModal
           key={modal.lesson?.id ?? 'new'}
           courseId={course.id}
-          lesson={modal.lesson}
+          lesson={course.lessons.find((l) => l.id === modal.lesson?.id) ?? modal.lesson}
           open
           onClose={() => setModal(null)}
         />

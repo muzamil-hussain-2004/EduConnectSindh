@@ -11,7 +11,7 @@ const select = {
   moderationNote: true,
   createdAt: true,
   updatedAt: true,
-  author: { select: { fullName: true } },
+  author: { select: { id: true, fullName: true, avatarFile: true } },
 } satisfies Prisma.ReviewSelect;
 
 type Tx = Prisma.TransactionClient;

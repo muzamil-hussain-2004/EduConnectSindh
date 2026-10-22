@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../../middlewares/auth.middleware';
+import { uploadMaterialFile } from '../../middlewares/upload.middleware';
 import { validateBody } from '../../middlewares/validate.middleware';
 import { coursesController as c } from './courses.controller';
 import {
@@ -34,6 +35,22 @@ coursesRoutes.patch(
   c.updateLesson,
 );
 coursesRoutes.delete('/:id/lessons/:lessonId', ...tutorOnly, c.deleteLesson);
+coursesRoutes.post(
+  '/:id/lessons/:lessonId/materials',
+  ...tutorOnly,
+  uploadMaterialFile,
+  c.addMaterial,
+);
+coursesRoutes.delete(
+  '/:id/lessons/:lessonId/materials/:materialId',
+  ...tutorOnly,
+  c.deleteMaterial,
+);
+coursesRoutes.get(
+  '/:id/lessons/:lessonId/materials/:materialId/file',
+  authenticate,
+  c.materialFile,
+);
 
 // Any signed-in user; the service checks owner / enrolled / admin.
 coursesRoutes.get('/:id/lessons/:lessonId', authenticate, c.getLesson);

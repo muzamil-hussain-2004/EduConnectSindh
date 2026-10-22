@@ -2,7 +2,7 @@ import { prisma } from '../../config/database';
 import type { Prisma } from '../../database/generated/prisma/client';
 
 const include = {
-  user: { select: { fullName: true } },
+  user: { select: { id: true, fullName: true, avatarFile: true } },
   subjects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
   areas: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
 } satisfies Prisma.TutorProfileInclude;

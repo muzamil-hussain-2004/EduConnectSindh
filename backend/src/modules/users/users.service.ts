@@ -1,5 +1,8 @@
 import type { User, UserStatus } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
+import { avatarUrlFor } from '../../shared/utils/avatar';
+import { detectFileType } from '../../shared/utils/fileType';
+import { documentStorage } from '../verification/document.storage';
 import { searchCache } from '../search/search.cache';
 import { hashPassword, verifyPassword } from '../../shared/utils/password';
 import { authRepository } from '../auth/auth.repository';
@@ -17,12 +20,44 @@ export function toPublicUser(user: User) {
     role: user.role,
     status: user.status,
     emailVerified: user.emailVerified,
+    avatarUrl: avatarUrlFor(user.id, user.avatarFile),
     createdAt: user.createdAt,
   };
 }
 
 export const usersService = {
   findByEmail: (email: string) => usersRepository.findByEmail(email),
+
+  async setAvatar(id: string, file: Express.Multer.File | undefined) {
+    if (!file) throw AppError.badRequest('Choose an image to upload');
+    const type = detectFileType(file.buffer);
+    if (!type || type.extension === 'pdf') {
+      throw AppError.badRequest('Profile picture must be a JPG or PNG image');
+    }
+    const previous = (await this.getById(id)).avatarFile;
+    const stored = await documentStorage.save(file.buffer, type.extension);
+    const user = await usersRepository.update(id, { avatarFile: stored });
+    if (previous) await documentStorage.remove(previous);
+    await searchCache.invalidate();
+    return toPublicUser(user);
+  },
+
+  async removeAvatar(id: string) {
+    const previous = (await this.getById(id)).avatarFile;
+    const user = await usersRepository.update(id, { avatarFile: null });
+    if (previous) await documentStorage.remove(previous);
+    await searchCache.invalidate();
+    return toPublicUser(user);
+  },
+
+  async avatarPath(id: string) {
+    const user = await usersRepository.findById(id);
+    if (!user?.avatarFile) throw AppError.notFound('No profile picture');
+    return {
+      path: documentStorage.pathOf(user.avatarFile),
+      mimeType: user.avatarFile.endsWith('png') ? 'image/png' : 'image/jpeg',
+    };
+  },
 
   async getById(id: string) {
     const user = await usersRepository.findById(id);

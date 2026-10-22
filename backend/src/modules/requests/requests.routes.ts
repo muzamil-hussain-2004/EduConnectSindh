@@ -11,6 +11,7 @@ requestsRoutes.use(authenticate);
 
 requestsRoutes.post('/', seeker, validateBody(createRequestSchema), requestsController.create);
 requestsRoutes.get('/mine', seeker, requestsController.listMine);
+requestsRoutes.get('/mine/tutor/:id', seeker, requestsController.statusWithTutor);
 requestsRoutes.get('/incoming', authorize('TUTOR'), requestsController.listIncoming);
 requestsRoutes.post('/:id/accept', authorize('TUTOR'), requestsController.accept);
 requestsRoutes.post('/:id/decline', authorize('TUTOR'), requestsController.decline);

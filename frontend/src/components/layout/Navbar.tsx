@@ -2,11 +2,11 @@ import { ChevronDown, LayoutDashboard, LogOut, Menu, Search, X } from 'lucide-re
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router';
 import { useAppSelector } from '@/app/hooks';
+import { Avatar } from '@/components/ui/Avatar';
 import { buttonClass } from '@/components/ui/Button';
 import { useLogoutMutation } from '@/features/auth/authApi';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
 import { cn } from '@/lib/cn';
-import { initials } from '@/lib/format';
 import { Logo } from './Logo';
 
 function UserMenu() {
@@ -43,9 +43,7 @@ function UserMenu() {
         aria-haspopup="menu"
         className="flex items-center gap-2 rounded-md py-1 pr-2 pl-1 hover:bg-surface"
       >
-        <span className="grid size-8 place-items-center rounded-full bg-brand-100 text-xs font-semibold text-brand-500">
-          {initials(user.fullName)}
-        </span>
+        <Avatar name={user.fullName} src={user.avatarUrl} size="sm" />
         <span className="text-sm font-medium">{user.fullName.split(' ')[0]}</span>
         <ChevronDown className="size-4 text-muted" />
       </button>

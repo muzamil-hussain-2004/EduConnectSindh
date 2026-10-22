@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/app/hooks';
+import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import { EmptyState, LoadingBlock, Pagination } from '@/components/ui/Feedback';
@@ -80,7 +81,10 @@ export function ReviewsSection({ tutorId }: { tutorId: string }) {
           {data.items.map((r) => (
             <li key={r.id} className="py-4">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-medium">{r.authorName}</p>
+                <div className="flex items-center gap-2">
+                  <Avatar name={r.authorName} src={r.authorAvatarUrl} size="sm" />
+                  <p className="font-medium">{r.authorName}</p>
+                </div>
                 <span className="text-xs text-muted">{formatDate(r.createdAt)}</span>
               </div>
               <RatingStars value={r.rating} />

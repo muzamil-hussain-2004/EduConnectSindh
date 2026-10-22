@@ -1,68 +1,150 @@
+import {
+  BookOpen,
+  CalendarClock,
+  ClipboardCheck,
+  GraduationCap,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 import { Link } from 'react-router';
-import { Card } from '@/components/ui/Card';
+import {
+  BarChart,
+  Donut,
+  Panel,
+  SidePanel,
+  StatTile,
+  WelcomeBanner,
+} from '@/components/dashboard/widgets';
+import { buttonClass } from '@/components/ui/Button';
 import { ErrorBlock, LoadingBlock } from '@/components/ui/Feedback';
 import { useGetAdminStatsQuery } from '@/features/admin/adminApi';
-import { PageHeader } from './PageHeader';
-
-function Tile({ label, value, to }: { label: string; value: number | string; to?: string }) {
-  const body = (
-    <Card className={to ? 'transition hover:shadow-md' : undefined}>
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-1 text-3xl font-semibold text-brand-500">{value}</p>
-    </Card>
-  );
-  return to ? <Link to={to}>{body}</Link> : body;
-}
 
 export function AdminOverviewPage() {
   const { data, isLoading, isError } = useGetAdminStatsQuery();
   if (isLoading) return <LoadingBlock />;
   if (isError || !data) return <ErrorBlock />;
 
-  const max = Math.max(1, ...data.signups.map((s) => s.count));
   const v = data.tutors.byVerification;
+  const roles = data.users.byRole;
+  const pending = v.PENDING ?? 0;
+  const verified = v.VERIFIED ?? 0;
+  const rejected = v.REJECTED ?? 0;
 
   return (
-    <>
-      <PageHeader title="Platform overview" text="Live numbers across EduConnect Sindh." />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Tile label="Users" value={data.users.total} to="/dashboard/admin/users" />
-        <Tile label="Suspended users" value={data.users.suspended} to="/dashboard/admin/users" />
-        <Tile
-          label="Tutors awaiting review"
-          value={v.PENDING ?? 0}
-          to="/dashboard/admin/verification"
+    <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="min-w-0 space-y-6">
+        <WelcomeBanner
+          icon={ShieldCheck}
+          title="Welcome back, Admin"
+          text={
+            pending
+              ? `${pending} tutor${pending === 1 ? ' is' : 's are'} waiting for verification.`
+              : 'Everything is reviewed. Nice work keeping the platform trusted.'
+          }
+          action={
+            <Link to="/dashboard/admin/verification" className={buttonClass('primary', 'md')}>
+              Review verifications
+            </Link>
+          }
         />
-        <Tile label="Verified tutors" value={v.VERIFIED ?? 0} />
-        <Tile label="Published courses" value={data.courses.byStatus.PUBLISHED ?? 0} />
-        <Tile label="Enrollments" value={data.courses.enrollments} />
-        <Tile label="Upcoming classes" value={data.classes.upcoming} />
-        <Tile label="Class bookings" value={data.classes.bookings} />
-        <Tile label="Pending requests" value={data.requests.byStatus.PENDING ?? 0} />
-        <Tile label="Accepted requests" value={data.requests.byStatus.ACCEPTED ?? 0} />
-        <Tile label="Visible reviews" value={data.reviews.visible} to="/dashboard/admin/reviews" />
-        <Tile
-          label="Students / Parents / Tutors"
-          value={`${data.users.byRole.STUDENT ?? 0} / ${data.users.byRole.PARENT ?? 0} / ${data.users.byRole.TUTOR ?? 0}`}
-        />
-      </div>
 
-      <Card className="mt-6">
-        <h2 className="mb-4 font-semibold">New sign-ups, last 14 days</h2>
-        <div className="flex h-40 items-end gap-1.5" role="img" aria-label="Sign-ups per day">
-          {data.signups.map((s) => (
-            <div key={s.date} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span className="text-[10px] text-muted">{s.count || ''}</span>
-              <div
-                className="w-full rounded-t bg-brand-500"
-                style={{ height: `${(s.count / max) * 100}%`, minHeight: s.count ? 4 : 2 }}
-                title={`${s.date}: ${s.count}`}
-              />
-              <span className="text-[10px] text-muted">{s.date.slice(8)}</span>
-            </div>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatTile
+            index={1}
+            label="Total users"
+            value={data.users.total}
+            icon={Users}
+            tone="bg-accent-100 text-accent-500"
+            to="/dashboard/admin/users"
+          />
+          <StatTile
+            index={2}
+            label="Published courses"
+            value={data.courses.byStatus.PUBLISHED ?? 0}
+            icon={BookOpen}
+            tone="bg-brand-100 text-brand-500"
+          />
+          <StatTile
+            index={3}
+            label="Upcoming classes"
+            value={data.classes.upcoming}
+            icon={CalendarClock}
+            tone="bg-green-100 text-success"
+          />
         </div>
-      </Card>
-    </>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Panel title="Users by role" index={2}>
+            <Donut
+              caption="Users by role"
+              centre={
+                <div>
+                  <p className="text-xl font-bold">{data.users.total}</p>
+                  <p className="text-[10px] text-muted">users</p>
+                </div>
+              }
+              segments={[
+                { label: 'Students', value: roles.STUDENT ?? 0, color: '#564ffd' },
+                { label: 'Parents', value: roles.PARENT ?? 0, color: '#fd8e1f' },
+                { label: 'Tutors', value: roles.TUTOR ?? 0, color: '#23bd33' },
+              ]}
+            />
+          </Panel>
+          <Panel title="Tutor verification" index={3}>
+            <Donut
+              caption="Tutor verification"
+              centre={
+                <div>
+                  <p className="text-xl font-bold">{verified}</p>
+                  <p className="text-[10px] text-muted">verified</p>
+                </div>
+              }
+              segments={[
+                { label: 'Verified', value: verified, color: '#23bd33' },
+                { label: 'Pending', value: pending, color: '#fd8e1f' },
+                { label: 'Rejected', value: rejected, color: '#e34444' },
+              ]}
+            />
+          </Panel>
+        </div>
+
+        <Panel title="New sign-ups, last 14 days" index={4}>
+          <BarChart data={data.signups.map((s) => ({ label: s.date.slice(8), value: s.count }))} />
+        </Panel>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatTile
+            index={5}
+            label="Enrollments"
+            value={data.courses.enrollments}
+            icon={GraduationCap}
+            tone="bg-accent-100 text-accent-500"
+          />
+          <StatTile
+            index={6}
+            label="Class bookings"
+            value={data.classes.bookings}
+            icon={CalendarClock}
+            tone="bg-brand-100 text-brand-500"
+          />
+          <StatTile
+            index={7}
+            label="Pending requests"
+            value={data.requests.byStatus.PENDING ?? 0}
+            icon={ClipboardCheck}
+            tone="bg-brand-100 text-warning"
+          />
+          <StatTile
+            index={8}
+            label="Visible reviews"
+            value={data.reviews.visible}
+            icon={ShieldCheck}
+            tone="bg-green-100 text-success"
+            to="/dashboard/admin/reviews"
+          />
+        </div>
+      </div>
+      <SidePanel />
+    </div>
   );
 }

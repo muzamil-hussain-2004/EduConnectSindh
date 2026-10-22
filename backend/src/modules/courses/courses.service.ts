@@ -1,7 +1,13 @@
 import type { Role } from '../../database/generated/prisma/client';
 import { AppError } from '../../shared/errors/AppError';
+import { detectFileType } from '../../shared/utils/fileType';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { notificationsService } from '../notifications/notifications.service';
+import { documentStorage } from '../verification/document.storage';
+import { clipText, extractPdfText } from './courses.extract';
 import { coursesRepository } from './courses.repository';
+
+const MAX_MATERIALS_PER_LESSON = 10;
 import type {
   CourseInput,
   CourseUpdate,
@@ -31,6 +37,7 @@ const toCourse = (c: CourseRow) => ({
   tutor: {
     id: c.tutorProfile.id,
     fullName: c.tutorProfile.user.fullName,
+    avatarUrl: avatarUrlFor(c.tutorProfile.user.id, c.tutorProfile.user.avatarFile),
     headline: c.tutorProfile.headline,
     ratingAvg: c.tutorProfile.ratingAvg,
     verificationStatus: c.tutorProfile.verificationStatus,
@@ -81,6 +88,25 @@ async function requireSubject(subjectId: string) {
   if (!(await coursesRepository.subjectExists(subjectId))) {
     throw AppError.badRequest('Unknown subject');
   }
+}
+
+// Owner, enrolled student or admin; everyone else is turned away.
+async function requireLessonAccess(
+  user: { id: string; role: Role },
+  courseId: string,
+  lessonId: string,
+) {
+  const course = await coursesRepository.findOwner(courseId);
+  if (!course) throw AppError.notFound('Course not found');
+  const lesson = await coursesRepository.findLesson(courseId, lessonId);
+  if (!lesson) throw AppError.notFound('Lesson not found');
+
+  const isOwner = course.tutorProfileId === (await coursesRepository.profileIdOf(user.id));
+  const enrolled = !!(await coursesRepository.findEnrollment(courseId, user.id));
+  if (!isOwner && !enrolled && user.role !== 'ADMIN') {
+    throw AppError.forbidden('Enroll in this course to open its lessons');
+  }
+  return { course, lesson };
 }
 
 async function requirePublished(courseId: string) {
@@ -139,7 +165,9 @@ export const coursesService = {
     if ((await coursesRepository.countEnrollments(courseId)) > 0) {
       throw AppError.conflict('Students are enrolled; unpublish the course instead of deleting it');
     }
+    const files = await coursesRepository.materialsOfCourse(courseId);
     await coursesRepository.remove(courseId);
+    await Promise.all(files.map((f) => documentStorage.remove(f.storedName)));
   },
 
   async addLesson(userId: string, courseId: string, input: LessonInput) {
@@ -165,7 +193,9 @@ export const coursesService = {
     if (course.status === 'PUBLISHED' && remaining <= 1) {
       throw AppError.conflict('Unpublish the course before deleting its last lesson');
     }
+    const files = await coursesRepository.materialsOfLesson(lessonId);
     await coursesRepository.deleteLesson(lessonId);
+    await Promise.all(files.map((f) => documentStorage.remove(f.storedName)));
   },
 
   // ----- Public catalogue -----
@@ -246,17 +276,75 @@ export const coursesService = {
 
   // The lesson text is the paid-for part: only the owner, enrolled students and admins read it.
   async getLesson(user: { id: string; role: Role }, courseId: string, lessonId: string) {
-    const course = await coursesRepository.findOwner(courseId);
-    if (!course) throw AppError.notFound('Course not found');
-    const lesson = await coursesRepository.findLesson(courseId, lessonId);
-    if (!lesson) throw AppError.notFound('Lesson not found');
+    return (await requireLessonAccess(user, courseId, lessonId)).lesson;
+  },
 
-    const isOwner = course.tutorProfileId === (await coursesRepository.profileIdOf(user.id));
-    const enrolled = !!(await coursesRepository.findEnrollment(courseId, user.id));
-    if (!isOwner && !enrolled && user.role !== 'ADMIN') {
-      throw AppError.forbidden('Enroll in this course to open its lessons');
+  async addMaterial(
+    userId: string,
+    courseId: string,
+    lessonId: string,
+    file: Express.Multer.File | undefined,
+  ) {
+    await requireOwned(userId, courseId);
+    if (!(await coursesRepository.findLesson(courseId, lessonId))) {
+      throw AppError.notFound('Lesson not found');
     }
-    return lesson;
+    if (!file) throw AppError.badRequest('Choose a file to upload');
+    if ((await coursesRepository.countMaterials(lessonId)) >= MAX_MATERIALS_PER_LESSON) {
+      throw AppError.badRequest(`A lesson can have at most ${MAX_MATERIALS_PER_LESSON} files`);
+    }
+
+    let mimeType: string;
+    let extension: string;
+    let extractedText = '';
+    const detected = detectFileType(file.buffer);
+    if (detected) {
+      ({ mimeType, extension } = detected);
+      if (detected.extension === 'pdf') extractedText = await extractPdfText(file.buffer);
+    } else if (/\.(txt|md)$/i.test(file.originalname) && !file.buffer.includes(0)) {
+      mimeType = 'text/plain';
+      extension = 'txt';
+      extractedText = clipText(file.buffer.toString('utf8'));
+    } else {
+      throw AppError.badRequest(
+        'Upload a PDF, image (JPG/PNG) or text file. Export PPT slides to PDF.',
+      );
+    }
+
+    const storedName = await documentStorage.save(file.buffer, extension);
+    return coursesRepository.createMaterial({
+      lessonId,
+      originalName: file.originalname.slice(0, 200),
+      storedName,
+      mimeType,
+      sizeBytes: file.size,
+      extractedText,
+    });
+  },
+
+  async deleteMaterial(userId: string, courseId: string, lessonId: string, materialId: string) {
+    await requireOwned(userId, courseId);
+    const material = await coursesRepository.findMaterial(lessonId, materialId);
+    if (!material) throw AppError.notFound('File not found');
+    await coursesRepository.deleteMaterial(materialId);
+    await documentStorage.remove(material.storedName);
+  },
+
+  // Students may only read: the file is streamed inline and never offered as a download.
+  async getMaterialFile(
+    user: { id: string; role: Role },
+    courseId: string,
+    lessonId: string,
+    materialId: string,
+  ) {
+    await requireLessonAccess(user, courseId, lessonId);
+    const material = await coursesRepository.findMaterial(lessonId, materialId);
+    if (!material) throw AppError.notFound('File not found');
+    return {
+      path: documentStorage.pathOf(material.storedName),
+      mimeType: material.mimeType,
+      originalName: material.originalName,
+    };
   },
 
   async setLessonDone(studentId: string, courseId: string, lessonId: string, done: boolean) {

@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CircleCheck, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAppSelector } from '@/app/hooks';
@@ -6,17 +6,62 @@ import { ReviewsSection } from '@/components/tutors/ReviewsSection';
 import { SendRequestModal } from '@/components/tutors/SendRequestModal';
 import { VerifiedMark } from '@/components/tutors/StatusBadge';
 import { ShortlistButton } from '@/components/tutors/TutorCard';
+import { Avatar } from '@/components/ui/Avatar';
 import { Badge, RatingStars } from '@/components/ui/Badge';
 import { Button, buttonClass } from '@/components/ui/Button';
 import { EmptyState, LoadingBlock } from '@/components/ui/Feedback';
+import { useGetTutorRequestStatusQuery } from '@/features/requests/requestsApi';
 import { useGetTutorQuery } from '@/features/tutors/tutorsApi';
-import { MODE_LABEL, formatPkr, initials, isSeeker } from '@/lib/format';
+import { MODE_LABEL, formatPkr, isSeeker } from '@/lib/format';
+
+function RequestButton({
+  status,
+  onSend,
+}: {
+  status: 'PENDING' | 'ACCEPTED' | null;
+  onSend: () => void;
+}) {
+  if (status === 'PENDING') {
+    return (
+      <div className="space-y-2">
+        <button
+          type="button"
+          disabled
+          className="flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-md bg-surface font-semibold text-muted"
+        >
+          <Lock className="size-4" /> Request sent
+        </button>
+        <p className="text-center text-xs text-muted">Waiting for the tutor to respond.</p>
+      </div>
+    );
+  }
+  if (status === 'ACCEPTED') {
+    return (
+      <div className="space-y-2">
+        <Link to="/dashboard/requests" className={buttonClass('soft', 'lg', 'w-full text-success')}>
+          <CircleCheck className="size-5" /> Request accepted
+        </Link>
+        <Button variant="ghost" className="w-full" onClick={onSend}>
+          Send another request
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <Button size="lg" className="w-full" onClick={onSend}>
+      Send request
+    </Button>
+  );
+}
 
 export function TutorDetailPage() {
   const { id = '' } = useParams();
   const user = useAppSelector((s) => s.auth.user);
   const [open, setOpen] = useState(false);
   const { data: tutor, isLoading, isError } = useGetTutorQuery(id);
+  const { data: requestStatus } = useGetTutorRequestStatusQuery(id, {
+    skip: !isSeeker(user?.role),
+  });
 
   if (isLoading) return <LoadingBlock />;
   if (isError || !tutor)
@@ -42,9 +87,7 @@ export function TutorDetailPage() {
       Sign in to send a request
     </Link>
   ) : isSeeker(user.role) ? (
-    <Button size="lg" className="w-full" onClick={() => setOpen(true)}>
-      Send request
-    </Button>
+    <RequestButton status={requestStatus?.status ?? null} onSend={() => setOpen(true)} />
   ) : (
     <p className="rounded-md bg-surface p-3 text-sm text-muted">
       Only students and parents can send requests.
@@ -64,9 +107,7 @@ export function TutorDetailPage() {
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-8">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <span className="grid size-24 shrink-0 place-items-center rounded-full bg-brand-100 text-3xl font-semibold text-brand-500">
-              {initials(tutor.fullName)}
-            </span>
+            <Avatar name={tutor.fullName} src={tutor.avatarUrl} size="xl" />
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold md:text-3xl">{tutor.fullName}</h1>
               <p className="text-ink-soft">{tutor.headline}</p>

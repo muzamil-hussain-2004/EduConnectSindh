@@ -1,4 +1,5 @@
 import { prisma } from '../../config/database';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { searchCache } from './search.cache';
 import type { RecommendQuery } from './search.schema';
 
@@ -73,7 +74,7 @@ export const recommendService = {
           verificationStatus: true,
           ratingAvg: true,
           ratingCount: true,
-          user: { select: { fullName: true } },
+          user: { select: { id: true, fullName: true, avatarFile: true } },
           subjects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
           areas: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
         },
@@ -94,6 +95,7 @@ export const recommendService = {
           tutor: {
             id: t.id,
             fullName: t.user.fullName,
+            avatarUrl: avatarUrlFor(t.user.id, t.user.avatarFile),
             headline: t.headline,
             qualification: t.qualification,
             experienceYears: t.experienceYears,

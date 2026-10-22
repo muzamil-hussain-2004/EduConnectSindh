@@ -2,19 +2,11 @@ import { ArrowRight, BadgeCheck, MessagesSquare, Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAppSelector } from '@/app/hooks';
+import { SubjectCard } from '@/components/tutors/SubjectCard';
 import { TutorCard } from '@/components/tutors/TutorCard';
 import { Button, buttonClass } from '@/components/ui/Button';
 import { useGetSubjectsQuery } from '@/features/catalog/catalogApi';
 import { useSearchTutorsQuery } from '@/features/tutors/tutorsApi';
-
-const TINTS = [
-  'bg-brand-50 text-brand-500',
-  'bg-accent-100 text-accent-500',
-  'bg-green-50 text-success',
-  'bg-orange-50 text-warning',
-  'bg-red-50 text-danger',
-  'bg-surface text-ink-soft',
-];
 
 const STEPS = [
   {
@@ -89,16 +81,15 @@ export function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-12">
         <h2 className="text-2xl font-semibold">Browse by subject</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {subjects.slice(0, 12).map((s, i) => (
-            <Link
-              key={s.id}
-              to={`/tutors?subjectId=${s.id}`}
-              className={`rounded-md p-4 text-sm font-semibold transition hover:shadow-md ${TINTS[i % TINTS.length]}`}
-            >
-              {s.name}
-            </Link>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {subjects.slice(0, 8).map((s, i) => (
+            <SubjectCard key={s.id} id={s.id} name={s.name} index={i} />
           ))}
+        </div>
+        <div className="mt-6 text-center">
+          <Link to="/tutors" className={buttonClass('soft', 'md')}>
+            See all subjects and tutors
+          </Link>
         </div>
       </section>
 

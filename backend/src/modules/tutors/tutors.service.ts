@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { searchCache } from '../search/search.cache';
 import type { TutorProfileWithRelations } from './tutors.repository';
 import { tutorsRepository } from './tutors.repository';
@@ -10,6 +11,7 @@ export function toTutorDto(profile: TutorProfileWithRelations) {
   return {
     id: profile.id,
     fullName: profile.user.fullName,
+    avatarUrl: avatarUrlFor(profile.user.id, profile.user.avatarFile),
     headline: profile.headline,
     bio: profile.bio,
     qualification: profile.qualification,

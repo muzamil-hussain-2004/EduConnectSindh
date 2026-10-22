@@ -1,6 +1,6 @@
 import { baseApi } from '@/services/api/baseApi';
-import { credentialsSet, loggedOut } from './authSlice';
-import type { ApiSuccess, AuthPayload } from '@/types/api';
+import { credentialsSet, loggedOut, userUpdated } from './authSlice';
+import type { ApiSuccess, AuthPayload, User } from '@/types/api';
 import type { LoginInput, RegisterPayload } from './auth.schemas';
 
 export const authApi = baseApi.injectEndpoints({
@@ -32,7 +32,33 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+    uploadAvatar: build.mutation<User, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append('file', file);
+        return { url: '/users/me/avatar', method: 'POST', body };
+      },
+      transformResponse: (res: ApiSuccess<{ user: User }>) => res.data.user,
+      invalidatesTags: ['Tutor', 'Courses', 'Reviews', 'Shortlist'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        dispatch(userUpdated((await queryFulfilled).data));
+      },
+    }),
+    removeAvatar: build.mutation<User, void>({
+      query: () => ({ url: '/users/me/avatar', method: 'DELETE' }),
+      transformResponse: (res: ApiSuccess<{ user: User }>) => res.data.user,
+      invalidatesTags: ['Tutor', 'Courses', 'Reviews', 'Shortlist'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        dispatch(userUpdated((await queryFulfilled).data));
+      },
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useLogoutMutation } = authApi;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useUploadAvatarMutation,
+  useRemoveAvatarMutation,
+} = authApi;

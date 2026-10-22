@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { notificationsService } from '../notifications/notifications.service';
 import { searchCache } from '../search/search.cache';
 import { reviewsRepository } from './reviews.repository';
@@ -12,6 +13,7 @@ const toPublic = (r: ReviewRow) => ({
   rating: r.rating,
   comment: r.comment,
   authorName: r.author.fullName,
+  authorAvatarUrl: avatarUrlFor(r.author.id, r.author.avatarFile),
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
 });

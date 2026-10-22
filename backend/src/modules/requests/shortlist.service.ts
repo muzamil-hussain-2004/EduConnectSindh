@@ -1,4 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { shortlistRepository } from './shortlist.repository';
 
 export const shortlistService = {
@@ -21,6 +22,7 @@ export const shortlistService = {
       tutor: {
         id: t.id,
         fullName: t.user.fullName,
+        avatarUrl: avatarUrlFor(t.user.id, t.user.avatarFile),
         headline: t.headline,
         qualification: t.qualification,
         experienceYears: t.experienceYears,

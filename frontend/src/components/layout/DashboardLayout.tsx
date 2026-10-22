@@ -1,4 +1,4 @@
-import {
+﻿import {
   Bell,
   BookMarked,
   BookOpen,
@@ -6,20 +6,23 @@ import {
   GraduationCap,
   FileCheck2,
   Heart,
+  Home,
   Inbox,
+  Search,
   LayoutDashboard,
   LogOut,
   MessageSquareWarning,
   UserCog,
   Users,
+  Video,
   type LucideIcon,
 } from 'lucide-react';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useAppSelector } from '@/app/hooks';
 import { Button } from '@/components/ui/Button';
+import { AvatarUploader } from './AvatarUploader';
 import { useLogoutMutation } from '@/features/auth/authApi';
 import { cn } from '@/lib/cn';
-import { initials } from '@/lib/format';
 import type { Role } from '@/types/api';
 
 interface Item {
@@ -73,6 +76,13 @@ const tab = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-brand-100 font-medium text-brand-500' : 'text-ink-soft hover:bg-surface',
   );
 
+const SHORTCUTS = [
+  { to: '/', label: 'Home', icon: Home },
+  { to: '/tutors', label: 'Find tutors', icon: Search },
+  { to: '/courses', label: 'Courses', icon: BookOpen },
+  { to: '/classes', label: 'Live classes', icon: Video },
+];
+
 /** Sidebar on desktop, horizontally scrollable tabs on mobile. */
 export function DashboardLayout() {
   const user = useAppSelector((s) => s.auth.user);
@@ -87,46 +97,63 @@ export function DashboardLayout() {
       .catch(() => undefined);
     navigate('/');
   };
+  const today = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:py-10">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:py-8">
       <aside className="lg:w-64 lg:shrink-0">
-        <div className="mb-4 hidden items-center gap-3 lg:flex">
-          <span className="grid size-12 place-items-center rounded-full bg-brand-100 font-semibold text-brand-500">
-            {initials(user.fullName)}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{user.fullName}</p>
-            <p className="text-xs text-muted capitalize">{user.role.toLowerCase()}</p>
+        <div className="animate-fade-up rounded-2xl border border-line bg-white p-4 lg:sticky lg:top-24">
+          <div className="mb-4 hidden lg:block">
+            <AvatarUploader />
           </div>
+          <nav
+            aria-label="Dashboard"
+            className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+          >
+            {items.map(({ to, label, icon: Icon, end }) => (
+              <NavLink key={to} to={to} end={end} className={tab}>
+                <Icon className="size-4" /> {label}
+              </NavLink>
+            ))}
+          </nav>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-3 hidden w-full justify-start lg:inline-flex"
+            onClick={onLogout}
+            loading={isLoading}
+          >
+            <LogOut className="size-4" /> Log out
+          </Button>
         </div>
-        <nav
-          aria-label="Dashboard"
-          className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
-        >
-          {items.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className={tab}>
-              <Icon className="size-4" /> {label}
-            </NavLink>
-          ))}
-        </nav>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-4 hidden w-full justify-start lg:inline-flex"
-          onClick={onLogout}
-          loading={isLoading}
-        >
-          <LogOut className="size-4" /> Log out
-        </Button>
       </aside>
       <section className="min-w-0 flex-1">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <p className="text-sm text-muted">{today}</p>
+          </div>
+          <nav aria-label="Quick links" className="flex flex-wrap gap-2">
+            {SHORTCUTS.map(({ to, label, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className="lift inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink-soft hover:text-brand-500"
+              >
+                <Icon className="size-4" /> {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
         <Outlet />
       </section>
     </div>
   );
 }
-
 export function LogoutButton() {
   const [logout, { isLoading }] = useLogoutMutation();
   const navigate = useNavigate();

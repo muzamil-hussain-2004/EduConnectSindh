@@ -44,6 +44,15 @@ export const requestsRepository = {
       where: { studentId, tutorProfileId, subjectId, status: 'PENDING' },
     })) > 0,
 
+  // Drives the "Request sent" button: pending wins over accepted.
+  openStatuses: async (studentId: string, tutorProfileId: string) =>
+    (
+      await prisma.tutorRequest.findMany({
+        where: { studentId, tutorProfileId, status: { in: ['PENDING', 'ACCEPTED'] } },
+        select: { status: true },
+      })
+    ).map((r) => r.status),
+
   create: (studentId: string, input: Omit<CreateRequestInput, 'tutorId'>, tutorProfileId: string) =>
     prisma.tutorRequest.create({
       data: {

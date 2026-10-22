@@ -4,6 +4,7 @@ import {
   idParamSchema,
   lessonParamsSchema,
   listCoursesQuerySchema,
+  materialParamsSchema,
   pageQuerySchema,
 } from './courses.schema';
 import { coursesService } from './courses.service';
@@ -55,6 +56,25 @@ export const coursesController = {
       lesson: await coursesService.updateLesson(user(req).id, id, lessonId, req.body),
     });
   },
+  async addMaterial(req: Request, res: Response) {
+    const { id, lessonId } = lessonParamsSchema.parse(req.params);
+    const material = await coursesService.addMaterial(user(req).id, id, lessonId, req.file);
+    ok(res, { material }, 201);
+  },
+  async deleteMaterial(req: Request, res: Response) {
+    const { id, lessonId, materialId } = materialParamsSchema.parse(req.params);
+    await coursesService.deleteMaterial(user(req).id, id, lessonId, materialId);
+    ok(res, null);
+  },
+  async materialFile(req: Request, res: Response) {
+    const { id, lessonId, materialId } = materialParamsSchema.parse(req.params);
+    const file = await coursesService.getMaterialFile(user(req), id, lessonId, materialId);
+    res.type(file.mimeType);
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.sendFile(file.path, { dotfiles: 'allow' });
+  },
+
   async deleteLesson(req: Request, res: Response) {
     const { id, lessonId } = lessonParamsSchema.parse(req.params);
     await coursesService.deleteLesson(user(req).id, id, lessonId);

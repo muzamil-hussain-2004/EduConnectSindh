@@ -8,6 +8,7 @@ export interface User {
   role: Role;
   status: string;
   emailVerified: boolean;
+  avatarUrl?: string | null;
   createdAt: string;
 }
 
@@ -60,6 +61,7 @@ export interface City {
 export interface TutorSummary {
   id: string;
   fullName: string;
+  avatarUrl?: string | null;
   headline: string;
   qualification: string;
   experienceYears: number;
@@ -86,6 +88,7 @@ export interface Review {
   rating: number;
   comment: string;
   authorName: string;
+  authorAvatarUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

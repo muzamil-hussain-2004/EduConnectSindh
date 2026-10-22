@@ -23,6 +23,11 @@ export const requestsApi = baseApi.injectEndpoints({
       transformResponse: listRequests,
       providesTags: ['Requests'],
     }),
+    getTutorRequestStatus: build.query<{ status: 'PENDING' | 'ACCEPTED' | null }, string>({
+      query: (tutorId) => `/requests/mine/tutor/${tutorId}`,
+      transformResponse: (res: ApiSuccess<{ status: 'PENDING' | 'ACCEPTED' | null }>) => res.data,
+      providesTags: ['Requests'],
+    }),
     getIncomingRequests: build.query<Paged<TutorRequest>, ListArgs>({
       query: (params) => ({ url: '/requests/incoming', params: params ?? undefined }),
       transformResponse: listRequests,
@@ -64,6 +69,7 @@ export const requestsApi = baseApi.injectEndpoints({
 export const {
   useGetMyRequestsQuery,
   useGetIncomingRequestsQuery,
+  useGetTutorRequestStatusQuery,
   useCreateRequestMutation,
   useRespondToRequestMutation,
   useGetShortlistQuery,

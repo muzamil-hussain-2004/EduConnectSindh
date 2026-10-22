@@ -58,7 +58,7 @@ export const searchRepository = {
           verificationStatus: true,
           ratingAvg: true,
           ratingCount: true,
-          user: { select: { fullName: true } },
+          user: { select: { id: true, fullName: true, avatarFile: true } },
           subjects: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
           areas: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
         },

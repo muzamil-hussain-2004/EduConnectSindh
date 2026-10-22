@@ -180,6 +180,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ todo
 - ✅ 2.4 Admin dashboard APIs and UI
 - ✅ 3.1 Deployment config (Render blueprint, Vercel rewrite, cross-site cookie) – see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 - ✅ 3.1b Only verified tutors can create/publish courses and schedule classes (403 otherwise); tutors see a "Get verified" notice
+- ✅ 3.1c UI and content batch: public profile pictures (`/users/:id/avatar`), lesson slides/materials (PDF, images, text) readable only by enrolled students and used by the AI assistant, locked "Request sent" button (`GET /requests/mine/tutor/:id`), Coursera-style subject cards, Learnzie-style dashboards (banner, donut/bar charts, calendar, schedule, activity), top quick-links and fade/lift animations. Migration `avatars_and_lesson_materials` runs through `prisma migrate deploy` on Render start.
 
 ### Phase 3 — Polish
 

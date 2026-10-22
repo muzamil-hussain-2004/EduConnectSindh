@@ -30,7 +30,7 @@ const courseSelect = {
       headline: true,
       ratingAvg: true,
       verificationStatus: true,
-      user: { select: { fullName: true } },
+      user: { select: { id: true, fullName: true, avatarFile: true } },
     },
   },
   lessons: {
@@ -48,6 +48,10 @@ const lessonSelect = {
   videoUrl: true,
   durationMin: true,
   position: true,
+  materials: {
+    select: { id: true, originalName: true, mimeType: true, sizeBytes: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
 } satisfies Prisma.LessonSelect;
 
 const orderings: Record<ListCoursesQuery['sort'], Prisma.CourseOrderByWithRelationInput[]> = {
@@ -136,6 +140,33 @@ export const coursesRepository = {
   lessonsWithContent: (courseId: string) =>
     prisma.lesson.findMany({ where: { courseId }, select: lessonSelect, orderBy: lessonOrder }),
 
+  // The assistant reads the lesson text plus the text pulled out of uploaded slides.
+  lessonsForAssistant: async (courseId: string) => {
+    const lessons = await prisma.lesson.findMany({
+      where: { courseId },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        materials: {
+          select: { originalName: true, extractedText: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: lessonOrder,
+    });
+    return lessons.map((l) => ({
+      id: l.id,
+      title: l.title,
+      content: [
+        l.content,
+        ...l.materials
+          .filter((m) => m.extractedText)
+          .map((m) => `Slides (${m.originalName}):\n${m.extractedText}`),
+      ].join('\n\n'),
+    }));
+  },
+
   findLesson: (courseId: string, lessonId: string) =>
     prisma.lesson.findFirst({ where: { id: lessonId, courseId }, select: lessonSelect }),
 
@@ -153,6 +184,41 @@ export const coursesRepository = {
     prisma.lesson.update({ where: { id: lessonId }, data, select: lessonSelect }),
 
   deleteLesson: (lessonId: string) => prisma.lesson.delete({ where: { id: lessonId } }),
+
+  // Materials (slides / handouts)
+  materialsOfCourse: (courseId: string) =>
+    prisma.lessonMaterial.findMany({
+      where: { lesson: { courseId } },
+      select: { storedName: true },
+    }),
+
+  materialsOfLesson: (lessonId: string) =>
+    prisma.lessonMaterial.findMany({
+      where: { lessonId },
+      select: { extractedText: true, originalName: true, storedName: true },
+      orderBy: { createdAt: 'asc' },
+    }),
+
+  createMaterial: (data: {
+    lessonId: string;
+    originalName: string;
+    storedName: string;
+    mimeType: string;
+    sizeBytes: number;
+    extractedText: string;
+  }) =>
+    prisma.lessonMaterial.create({
+      data,
+      select: { id: true, originalName: true, mimeType: true, sizeBytes: true },
+    }),
+
+  findMaterial: (lessonId: string, materialId: string) =>
+    prisma.lessonMaterial.findFirst({ where: { id: materialId, lessonId } }),
+
+  countMaterials: (lessonId: string) => prisma.lessonMaterial.count({ where: { lessonId } }),
+
+  deleteMaterial: (materialId: string) =>
+    prisma.lessonMaterial.delete({ where: { id: materialId } }),
 
   // Enrollment and progress
   findEnrollment: (courseId: string, studentId: string) =>

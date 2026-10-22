@@ -1,4 +1,5 @@
 import { searchCache } from './search.cache';
+import { avatarUrlFor } from '../../shared/utils/avatar';
 import { searchRepository } from './search.repository';
 import type { SearchTutorsQuery } from './search.schema';
 
@@ -12,6 +13,7 @@ export const searchService = {
         items: items.map((t) => ({
           id: t.id,
           fullName: t.user.fullName,
+          avatarUrl: avatarUrlFor(t.user.id, t.user.avatarFile),
           headline: t.headline,
           qualification: t.qualification,
           experienceYears: t.experienceYears,

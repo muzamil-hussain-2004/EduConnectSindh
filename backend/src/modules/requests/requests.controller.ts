@@ -15,6 +15,11 @@ export const requestsController = {
     res.status(201).json({ success: true, data: { request } });
   },
 
+  async statusWithTutor(req: Request, res: Response) {
+    const { id } = idParamSchema.parse(req.params);
+    res.json({ success: true, data: await requestsService.statusWithTutor(userId(req), id) });
+  },
+
   async listMine(req: Request, res: Response) {
     const { items, meta } = await requestsService.listMine(
       userId(req),

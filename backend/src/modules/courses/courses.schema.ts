@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 export const idParamSchema = z.object({ id: z.uuid() });
 export const lessonParamsSchema = z.object({ id: z.uuid(), lessonId: z.uuid() });
+export const materialParamsSchema = z.object({
+  id: z.uuid(),
+  lessonId: z.uuid(),
+  materialId: z.uuid(),
+});
 
 const level = z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']);
 

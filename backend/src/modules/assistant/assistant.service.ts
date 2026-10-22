@@ -17,7 +17,7 @@ export const assistantService = {
       throw AppError.forbidden('Enroll in this course to use the assistant');
     }
 
-    const lessons = await coursesRepository.lessonsWithContent(courseId);
+    const lessons = await coursesRepository.lessonsForAssistant(courseId);
     if (input.lessonId && !lessons.some((l) => l.id === input.lessonId)) {
       throw AppError.badRequest('That lesson is not part of this course');
     }

@@ -2,6 +2,7 @@ import { Heart } from 'lucide-react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/app/hooks';
+import { Avatar } from '@/components/ui/Avatar';
 import { Badge, RatingStars } from '@/components/ui/Badge';
 import { VerifiedMark } from '@/components/tutors/StatusBadge';
 import {
@@ -10,7 +11,7 @@ import {
   useRemoveFromShortlistMutation,
 } from '@/features/requests/requestsApi';
 import { cn } from '@/lib/cn';
-import { MODE_LABEL, formatPkr, initials, isSeeker } from '@/lib/format';
+import { MODE_LABEL, formatPkr, isSeeker } from '@/lib/format';
 import { getErrorMessage } from '@/services/api/baseApi';
 import type { TutorSummary } from '@/types/api';
 
@@ -47,9 +48,7 @@ export function TutorCard({ tutor }: { tutor: TutorSummary }) {
     <article className="relative flex flex-col rounded-md border border-line bg-white p-4 transition hover:shadow-md">
       <ShortlistButton tutorId={tutor.id} className="absolute top-3 right-3" />
       <div className="flex items-center gap-3 pr-10">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-brand-100 text-lg font-semibold text-brand-500">
-          {initials(tutor.fullName)}
-        </span>
+        <Avatar name={tutor.fullName} src={tutor.avatarUrl} size="lg" />
         <div className="min-w-0">
           <Link
             to={`/tutors/${tutor.id}`}

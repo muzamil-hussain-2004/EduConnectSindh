@@ -14,6 +14,26 @@ export const usersController = {
     res.json({ success: true, data: { user } });
   },
 
+  async setAvatar(req: Request, res: Response) {
+    const user = await usersService.setAvatar(currentUserId(req), req.file);
+    res.json({ success: true, data: { user } });
+  },
+
+  async removeAvatar(req: Request, res: Response) {
+    const user = await usersService.removeAvatar(currentUserId(req));
+    res.json({ success: true, data: { user } });
+  },
+
+  // Public on purpose: profile pictures are visible to everyone.
+  async avatar(req: Request, res: Response) {
+    const { id } = userIdParamSchema.parse(req.params);
+    const file = await usersService.avatarPath(id);
+    res.type(file.mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.sendFile(file.path, { dotfiles: 'allow' });
+  },
+
   async changePassword(req: Request, res: Response) {
     await usersService.changePassword(currentUserId(req), req.body);
     res.json({ success: true, data: null });

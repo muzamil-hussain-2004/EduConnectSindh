@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { AssistantPanel } from '@/components/assistant/AssistantPanel';
 import { ProgressBar } from '@/components/courses/CourseCard';
+import { LessonContent } from '@/components/courses/LessonContent';
+import { LessonMaterials } from '@/components/courses/LessonMaterials';
 import { Button, buttonClass } from '@/components/ui/Button';
 import { ErrorBlock, LoadingBlock } from '@/components/ui/Feedback';
 import {
@@ -61,9 +63,13 @@ export function LessonPage() {
             Watch video <ExternalLink className="size-4" />
           </a>
         )}
-        <div className="mt-5 rounded-md border border-line p-5 whitespace-pre-line text-ink-soft">
-          {lesson.content}
-        </div>
+        <LessonContent key={lessonId} content={lesson.content} />
+        <LessonMaterials
+          key={`m-${lessonId}`}
+          courseId={id}
+          lessonId={lessonId}
+          materials={lesson.materials}
+        />
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex gap-2">

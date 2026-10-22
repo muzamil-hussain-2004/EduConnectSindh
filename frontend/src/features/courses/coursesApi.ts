@@ -11,9 +11,17 @@ export interface LessonOutline {
   position: number;
 }
 
+export interface LessonMaterial {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
 export interface LessonFull extends LessonOutline {
   content: string;
   videoUrl: string | null;
+  materials: LessonMaterial[];
 }
 
 export interface Course {
@@ -160,6 +168,29 @@ export const coursesApi = baseApi.injectEndpoints({
       transformResponse: unwrap,
       invalidatesTags: ['Courses'],
     }),
+    uploadMaterial: build.mutation<
+      LessonMaterial,
+      { courseId: string; lessonId: string; file: File }
+    >({
+      query: ({ courseId, lessonId, file }) => {
+        const body = new FormData();
+        body.append('file', file);
+        return { url: `/courses/${courseId}/lessons/${lessonId}/materials`, method: 'POST', body };
+      },
+      transformResponse: (res: ApiSuccess<{ material: LessonMaterial }>) => res.data.material,
+      invalidatesTags: ['Courses'],
+    }),
+    deleteMaterial: build.mutation<
+      null,
+      { courseId: string; lessonId: string; materialId: string }
+    >({
+      query: ({ courseId, lessonId, materialId }) => ({
+        url: `/courses/${courseId}/lessons/${lessonId}/materials/${materialId}`,
+        method: 'DELETE',
+      }),
+      transformResponse: unwrap,
+      invalidatesTags: ['Courses'],
+    }),
     getLesson: build.query<LessonFull, { courseId: string; lessonId: string }>({
       query: ({ courseId, lessonId }) => `/courses/${courseId}/lessons/${lessonId}`,
       transformResponse: lesson,
@@ -212,6 +243,8 @@ export const {
   useUpdateLessonMutation,
   useDeleteLessonMutation,
   useGetLessonQuery,
+  useUploadMaterialMutation,
+  useDeleteMaterialMutation,
   useGetEnrollmentQuery,
   useEnrollMutation,
   useUnenrollMutation,

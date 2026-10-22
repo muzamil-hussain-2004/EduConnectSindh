@@ -82,6 +82,16 @@ export const requestsService = {
     return toRequestDto(created, 'student');
   },
 
+  async statusWithTutor(studentId: string, tutorId: string) {
+    const open = await requestsRepository.openStatuses(studentId, tutorId);
+    const status = open.includes('PENDING')
+      ? 'PENDING'
+      : open.includes('ACCEPTED')
+        ? 'ACCEPTED'
+        : null;
+    return { status };
+  },
+
   async listMine(studentId: string, query: ListRequestsQuery) {
     const { items, total } = await requestsRepository.list(
       { studentId, ...(query.status ? { status: query.status } : {}) },
