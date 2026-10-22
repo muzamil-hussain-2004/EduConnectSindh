@@ -1,0 +1,56 @@
+# One-command demo: `docker compose up --build`, then open http://localhost:8080
+# Demo-only secrets below. Never reuse them for a real deployment.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: educonnect
+      POSTGRES_PASSWORD: demo_password
+      POSTGRES_DB: educonnect
+    volumes:
+      - demo_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U educonnect -d educonnect']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://educonnect:demo_password@db:5432/educonnect?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: demo-access-secret-change-me-0123456789abcdef
+      JWT_REFRESH_SECRET: demo-refresh-secret-change-me-0123456789abcdef
+      CLIENT_URL: http://localhost:8080
+      ADMIN_EMAIL: admin@educonnect.local
+      ADMIN_PASSWORD: ChangeMe123!
+      UPLOAD_DIR: uploads/.private
+    volumes:
+      - demo_uploads:/app/uploads
+
+  web:
+    build: ./frontend
+    depends_on:
+      - api
+    ports:
+      - '8080:80'
+
+volumes:
+  demo_pg:
+  demo_uploads:

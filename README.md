@@ -95,6 +95,18 @@ EduConnectSindh/
 
 ## Getting started
 
+### Quick demo with Docker (no Node, no database setup)
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then from the project root:
+
+```bash
+docker compose up --build
+```
+
+Open <http://localhost:8080> and log in as `admin@educonnect.local` / `ChangeMe123!`. Stop with `Ctrl+C`; `docker compose down -v` also wipes the demo data. The secrets in `docker-compose.yml` are for demos only.
+
+### Manual setup
+
 ### Prerequisites
 
 - Node.js 20 or newer
